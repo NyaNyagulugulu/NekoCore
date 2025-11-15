@@ -41,7 +41,7 @@ public class VersionCommand extends BukkitCommand {
         this.description = "Gets the version of this server including any plugins in use";
         this.usageMessage = "/version [plugin name]";
         this.setPermission("bukkit.command.version");
-        this.setAliases(Arrays.asList("ver", "about"));
+        this.setAliases(Arrays.asList("ver"));
     }
 
     @Override
@@ -49,7 +49,7 @@ public class VersionCommand extends BukkitCommand {
         if (!testPermission(sender)) return true;
 
         if (args.length == 0) {
-            sender.sendMessage("This server is running " + Bukkit.getName() + " version " + Bukkit.getVersion() + " (Implementing API version " + Bukkit.getBukkitVersion() + ")");
+            sender.sendMessage("This server is running " + Bukkit.getVersion());
             tellHistory(sender); // Paper
             sendVersion(sender); // Paper - We'll say when, thanks
         } else {
@@ -99,7 +99,7 @@ public class VersionCommand extends BukkitCommand {
             return;
         }
 
-        sender.sendMessage("Previous version: " + oldVersion);
+//        sender.sendMessage("Previous version: " + oldVersion);
     }
     // Paper end
 
@@ -178,18 +178,22 @@ public class VersionCommand extends BukkitCommand {
                 lastCheck = System.currentTimeMillis();
                 hasVersion = false;
             } else {
-                sender.sendMessage(versionMessage);
+                if (!versionMessage.isEmpty()) { // 只有在消息不为空时才发送
+                    sender.sendMessage(versionMessage);
+                }
                 return;
             }
         }
         versionLock.lock();
         try {
             if (hasVersion) {
-                sender.sendMessage(versionMessage);
+                if (!versionMessage.isEmpty()) { // 只有在消息不为空时才发送
+                    sender.sendMessage(versionMessage);
+                }
                 return;
             }
             versionWaiters.add(sender);
-            sender.sendMessage("Checking version, please wait...");
+            // 移除"Checking version, please wait..."消息
             if (!versionTaskStarted) {
                 versionTaskStarted = true;
                 new Thread(new Runnable() {
@@ -214,32 +218,40 @@ public class VersionCommand extends BukkitCommand {
             int distance = getDistance(null, parts[0]);
             switch (distance) {
                 case -1:
-                    setVersionMessage("Error obtaining version information");
+                    // setVersionMessage("Error obtaining version information");
+                    setVersionMessage(""); // 移除错误信息
                     break;
                 case 0:
-                    setVersionMessage("You are running the latest version");
+                    // setVersionMessage("You are running the latest version");
+                    setVersionMessage(""); // 移除版本信息
                     break;
                 case -2:
-                    setVersionMessage("Unknown version");
+                    // setVersionMessage("Unknown version");
+                    setVersionMessage(""); // 移除未知版本信息
                     break;
                 default:
-                    setVersionMessage("You are " + distance + " version(s) behind");
+                    // setVersionMessage("You are " + distance + " version(s) behind");
+                    setVersionMessage(""); // 移除版本滞后信息
             }
         } else if (version.startsWith("git-Bukkit-")) {
             // Paper end
             version = version.substring("git-Bukkit-".length());
             int cbVersions = getDistance("craftbukkit", version.substring(0, version.indexOf(' ')));
             if (cbVersions == -1) {
-                setVersionMessage("Error obtaining version information");
+                // setVersionMessage("Error obtaining version information");
+                setVersionMessage(""); // 移除错误信息
             } else {
                 if (cbVersions == 0) {
-                    setVersionMessage("You are running the latest version");
+                    // setVersionMessage("You are running the latest version");
+                    setVersionMessage(""); // 移除版本信息
                 } else {
-                    setVersionMessage("You are " + cbVersions + " version(s) behind");
+                    // setVersionMessage("You are " + cbVersions + " version(s) behind");
+                    setVersionMessage(""); // 移除版本滞后信息
                 }
             }
         } else {
-            setVersionMessage("Unknown version, custom build?");
+            // setVersionMessage("Unknown version, custom build?");
+            setVersionMessage(""); // 移除未知版本信息
         }
     }
 
@@ -251,7 +263,9 @@ public class VersionCommand extends BukkitCommand {
             hasVersion = true;
             versionTaskStarted = false;
             for (CommandSender sender : versionWaiters) {
-                sender.sendMessage(versionMessage);
+                if (!versionMessage.isEmpty()) { // 只有在消息不为空时才发送
+                    sender.sendMessage(versionMessage);
+                }
             }
             versionWaiters.clear();
         } finally {
@@ -268,21 +282,7 @@ public class VersionCommand extends BukkitCommand {
             verInfo = verInfo.replace("\"", "");
             return getFromRepo("PaperMC/Paper", verInfo);
         }
-            /*
-            BufferedReader reader = Resources.asCharSource(
-                    new URL("https://hub.spigotmc.org/stash/rest/api/1.0/projects/SPIGOT/repos/" + repo + "/commits?since=" + URLEncoder.encode(hash, "UTF-8") + "&withCounts=true"),
-                    Charsets.UTF_8
-            ).openBufferedStream();
-            try {
-                JSONObject obj = (JSONObject) new JSONParser().parse(reader);
-                return ((Number) obj.get("totalCount")).intValue();
-            } catch (ParseException ex) {
-                ex.printStackTrace();
-                return -1;
-            } finally {
-                reader.close();
-            }
-            */
+
     }
 
     private static int getFromJenkins(int currentVer) {

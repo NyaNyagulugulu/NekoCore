@@ -1,0 +1,17 @@
+# 这是Bukkit的命令配置文件。
+# 有关如何使用此文件的文档，请查看Bukkit Wiki
+# http://wiki.bukkit.org/Commands.yml
+#
+# 如果您需要此文件的帮助，请随时加入我们的IRC或在论坛上留言
+# 寻求建议。
+#
+# IRC: #spigot @ irc.spi.gt
+#    (如果这对您来说什么都不是，只需访问 http://www.spigotmc.org/pages/irc/ )
+# 论坛: http://www.spigotmc.org/
+# Bug跟踪器: http://www.spigotmc.org/go/bugs
+
+command-block-overrides: []
+unrestricted-advancements: false
+aliases:
+  icanhasbukkit:
+    - "version $1-"

@@ -80,7 +80,7 @@ public final class Bukkit {
         }
 
         Bukkit.server = server;
-        server.getLogger().info("This server is running " + " version " + getVersion() + " (Implementing API version " + getBukkitVersion() + ")");
+        server.getLogger().info("This server is running " + getVersion());
     }
 
     /**
