@@ -22,7 +22,7 @@
 
     <parent>
         <groupId>com.destroystokyo.paper</groupId>
-        <artifactId>paper-parent</artifactId>
+        <artifactId>neko-root</artifactId>
         <version>dev-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
@@ -137,15 +137,14 @@
 
     <repositories>
         <repository>
-            <!-- Paper start - update log4j -->
-            <id>paper</id>
+            <id>NekoCore</id>
             <url>https://papermc.io/repo/repository/maven-public/</url>
         </repository>
     </repositories>
 
     <pluginRepositories>
         <pluginRepository>
-            <id>paper</id>
+            <id>NekoCore</id>
             <url>https://papermc.io/repo/repository/maven-public/</url>
             <!-- paper end - update log4j -->
         </pluginRepository>
