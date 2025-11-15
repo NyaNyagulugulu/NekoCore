@@ -21,17 +21,18 @@ public class EULA {
 
     private boolean a(File file) {
         FileInputStream fileinputstream = null;
-        boolean flag = false;
+        boolean flag = true;   // ⭐ 默认值改为 TRUE
 
         try {
             Properties properties = new Properties();
 
             fileinputstream = new FileInputStream(file);
             properties.load(fileinputstream);
-            flag = Boolean.parseBoolean(properties.getProperty("eula", "true"));
+            flag = Boolean.parseBoolean(properties.getProperty("eula", "true")); // ⭐ 默认 true
+
         } catch (Exception exception) {
             EULA.a.warn("Failed to load {}", file);
-            this.b();
+            this.b(); // ⭐ 写入默认的 true
         } finally {
             IOUtils.closeQuietly(fileinputstream);
         }
@@ -50,9 +51,9 @@ public class EULA {
             Properties properties = new Properties();
 
             fileoutputstream = new FileOutputStream(this.b);
-            properties.setProperty("eula", "false");
-            properties.store(fileoutputstream, "这是他妈臭婊子微软的EULA。不写为true臭婊子不让你运行 (https://account.mojang.com/documents/minecraft_eula)." +
-                    "\nand also agreeing that tacos are tasty.");
+            properties.setProperty("eula", "true");  // ⭐ 默认写入 TRUE
+            properties.store(fileoutputstream,
+                "By setting this to TRUE you are agreeing to the EULA.");
         } catch (Exception exception) {
             EULA.a.warn("Failed to save {}", this.b, exception);
         } finally {
