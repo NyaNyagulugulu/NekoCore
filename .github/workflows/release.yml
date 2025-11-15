@@ -27,24 +27,51 @@ jobs:
         key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
         restore-keys: ${{ runner.os }}-m2
 
-    - name: Build with Maven
+    # 初始化项目结构 - Paper项目需要通过特殊方法构建
+    - name: Prepare Paper project structure
       run: |
-        mvn clean install -DskipTests=true -Dmaven.javadoc.skip=true -B -V
+        echo "Checking project structure..."
+        ls -la
+        find . -name "pom.xml" -exec echo "Found: {}" \;
+        echo "Root pom.xml:"
+        cat pom.xml || echo "No root pom.xml found"
+        echo "Paper-API pom.xml parent reference:"
+        grep -A 5 -B 5 "paper-parent" Paper-API/pom.xml || echo "No paper-parent reference found"
 
-    - name: Find JAR files
+    # 修复Paper API的父POM问题 - 通过构建整个项目结构解决
+    - name: Build Paper project with proper module handling
+      run: |
+        # 首先，构建整个多模块项目
+        echo "Building the entire project..."
+        # 使用mvn命令构建整个项目，跳过测试以加速
+        mvn clean install -DskipTests=true -Dmaven.javadoc.skip=true -B -e -U
+
+    # 检查构建结果并查找JAR文件
+    - name: Find built JAR files
       id: find_jars
       run: |
-        # 查找构建产物
-        JARS=$(find . -name "*.jar" -path "*/target/*" -not -path "./.git/*" | head -10)
+        # 查找所有构建产生的JAR文件
+        echo "Searching for JAR files in target directories..."
+        find . -name "*.jar" -not -path "./.git/*" -not -path "./.github/*" -not -path "./target/*" | grep -v "\-sources\.jar" | grep -v "\-javadoc\.jar"
+        echo "JAR files in Neko-Server:"
+        find ./Neko-Server/target -name "*.jar" -not -path "./.git/*" | grep -v "\-sources\.jar" | grep -v "\-javadoc\.jar"
+        echo "JAR files in Paper-API:"
+        find ./Paper-API/target -name "*.jar" -not -path "./.git/*" | grep -v "\-sources\.jar" | grep -v "\-javadoc\.jar"
+        # 搜索最终的JAR文件
+        JARS=$(find . -name "*.jar" -not -path "./.git/*" -not -path "./.github/*" -not -path "./target/*" | grep -v "\-sources\.jar" | grep -v "\-javadoc\.jar" | head -10)
+        if [ -z "$JARS" ]; then
+          # 尝试在target目录中查找
+          JARS=$(find ./Neko-Server/target ./Paper-API/target -name "*.jar" -not -path "./.git/*" | grep -v "\-sources\.jar" | grep -v "\-javadoc\.jar" | head -10)
+        fi
         echo "jars<<EOF" >> $GITHUB_OUTPUT
         echo "$JARS" >> $GITHUB_OUTPUT
         echo "EOF" >> $GITHUB_OUTPUT
+        echo "Found $(echo "$JARS" | wc -l) JAR files for release"
 
     - name: Release
       uses: softprops/action-gh-release@v1
       if: steps.find_jars.outputs.jars != ''
       with:
-        files: |
-          ${{ steps.find_jars.outputs.jars }}
+        files: ${{ steps.find_jars.outputs.jars }}
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
