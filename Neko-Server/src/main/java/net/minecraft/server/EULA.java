@@ -28,7 +28,7 @@ public class EULA {
 
             fileinputstream = new FileInputStream(file);
             properties.load(fileinputstream);
-            flag = Boolean.parseBoolean(properties.getProperty("eula", "false"));
+            flag = Boolean.parseBoolean(properties.getProperty("eula", "true"));
         } catch (Exception exception) {
             EULA.a.warn("Failed to load {}", file);
             this.b();
