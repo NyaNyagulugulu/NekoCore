@@ -1013,14 +1013,8 @@ public abstract class EntityHuman extends EntityLiving {
                     boolean flag3 = false;
                     double d0 = (double) (this.J - this.I);
 
-                    // 1.8扫击攻击条件
-                    if (flag && !flag2 && !flag1 && this.onGround && d0 < (double) this.cy()) {
-                        ItemStack itemstack1 = this.b(EnumHand.MAIN_HAND);
-
-                        if (itemstack1.getItem() instanceof ItemSword) {
-                            flag3 = true;
-                        }
-                    }
+                    // 1.8没有扫击攻击，移除范围伤害
+                    flag3 = false; // 确保不会触发扫击攻击
 
                     float f3 = 0.0F;
                     boolean flag4 = false;
@@ -1063,26 +1057,7 @@ public abstract class EntityHuman extends EntityLiving {
                             // Paper end
                         }
 
-                        if (flag3) {
-                            // 1.8扫击攻击伤害计算 - 使用线程本地缓存的列表减少GC
-                            List<EntityLiving> sweepAttackTargets = sweepAttackList.get();
-                            sweepAttackTargets.clear(); // 重用列表，减少垃圾回收
-                            sweepAttackTargets.addAll(this.world.a(EntityLiving.class, entity.getBoundingBox().grow(1.0D, 0.25D, 1.0D)));
-                            
-                            float f4 = 1.0F + EnchantmentManager.a((EntityLiving) this) * f;
-                            for (EntityLiving entityliving : sweepAttackTargets) {
-                                if (entityliving != this && entityliving != entity && !this.r(entityliving) && this.h(entityliving) < 9.0D) {
-                                    // CraftBukkit start - Only apply knockback if the damage hits
-                                    if (entityliving.damageEntity(DamageSource.playerAttack(this).sweep(), f4)) {
-                                        entityliving.a(this, 0.4F, (double) MathHelper.sin(this.yaw * 0.017453292F), (double) (-MathHelper.cos(this.yaw * 0.017453292F)));
-                                    }
-                                    // CraftBukkit end
-                                }
-                            }
-
-                            sendSoundEffect(this, this.locX, this.locY, this.locZ, SoundEffects.fz, this.bK(), 1.0F, 1.0F); // Paper - send while respecting visibility
-                            this.cX();
-                        }
+                        // 移除扫击攻击逻辑以符合1.8.8机制 - 一次只能攻击一个实体
 
                         if (entity instanceof EntityPlayer && entity.velocityChanged) {
                             // CraftBukkit start - Add Velocity Event
@@ -1114,12 +1089,12 @@ public abstract class EntityHuman extends EntityLiving {
                             this.a(entity);
                         }
 
-                        if (!flag2 && !flag3) {
-                            if (flag) {
-                                sendSoundEffect(this, this.locX, this.locY, this.locZ, SoundEffects.fy, this.bK(), 1.0F, 1.0F); // Paper - send while respecting visibility
-                            } else {
-                                sendSoundEffect(this, this.locX, this.locY, this.locZ, SoundEffects.fA, this.bK(), 1.0F, 1.0F); // Paper - send while respecting visibility
-                            }
+                        if (!flag2) {
+                            if (flag) {
+                                sendSoundEffect(this, this.locX, this.locY, this.locZ, SoundEffects.fy, this.bK(), 1.0F, 1.0F); // Paper - send while respecting visibility
+                            } else {
+                                sendSoundEffect(this, this.locX, this.locY, this.locZ, SoundEffects.fA, this.bK(), 1.0F, 1.0F); // Paper - send while respecting visibility
+                            }
                         }
 
                         if (f1 > 0.0F) {
