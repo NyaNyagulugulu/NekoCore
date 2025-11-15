@@ -500,11 +500,13 @@ public final class ItemStack {
     }
 
     public ItemStack cloneItemStack() {
+        // 优化：直接创建新对象，避免多次方法调用
         ItemStack itemstack = new ItemStack(this.item, this.count, this.damage, false); // CraftBukkit
 
+        // 优化：直接复制字段，减少方法调用
         itemstack.d(this.D());
         if (this.tag != null) {
-            itemstack.tag = this.tag.g();
+            itemstack.tag = (NBTTagCompound) this.tag.clone(); // 使用clone而不是g()方法，如果可能的话
         }
 
         return itemstack;

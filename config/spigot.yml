@@ -1,0 +1,131 @@
+# NekoCore Spigot Configuration File
+# 优化性能设置以提高TPS和降低内存使用
+# Optimized performance settings to improve TPS and reduce memory usage
+
+# 设置
+# Settings
+settings:
+  # 玩家样本设置
+  # Player sample settings
+  sample-count: 12
+  # 超时时间
+  # Timeout time
+  timeout-time: 60
+  # 崩溃后重启
+  # Restart on crash
+  restart-on-crash: true
+  # 玩家洗牌
+  # Player shuffle
+  player-shuffle: 0
+  # 用户缓存大小
+  # User cache size
+  user-cache-size: 1000
+  # 种子设置
+  # Seed settings
+  save-user-cache-on-stop-only: false
+  # 种子相关设置
+  # Seed related settings
+  moved-wrongly-threshold: 0.0625
+  moved-too-quickly-multiplier: 10.0
+  # 属性最大值
+  # Attribute max values
+  attribute:
+    maxHealth:
+      max: 2048.0
+    movementSpeed:
+      max: 2048.0
+    attackDamage:
+      max: 2048.0
+
+# 世界设置
+# World settings
+world-settings:
+  default:
+    # 实体追踪范围
+    # Entity tracking range
+    entity-tracking-range:
+      players: 48
+      animals: 32
+      monsters: 32
+      misc: 16
+      other: 64
+    
+    # 每tick处理数
+    # Ticks per
+    ticks-per:
+      animal-spawns: 400
+      monster-spawns: 1
+      autosave: 6000
+    
+    # 实体激活范围
+    # Entity activation range
+    entity-activation-range:
+      animals: 16
+      monsters: 32
+      misc: 16
+      water: 16
+      tick-inactive-villagers: false
+    
+    # 实体碰撞最大数
+    # Max entity collisions
+    max-entity-collisions: 4
+    
+    # Merge radius
+    merge-radius:
+      item: 3.5
+      exp: 4.0
+    
+    # 生物生成限制
+    # Mob spawn limits
+    mob-spawn-range: 4
+    
+    # 生物限制
+    # Mob limits
+    entity-count-warnings:
+      enabled: true
+      log-to-console: true
+      log-to-file: true
+      check-interval: 10
+    
+    # 红石相关设置
+    # Redstone related settings
+    enable-zombie-pigmen-portal-spawns: true
+    item-despawn-rate: 6000
+    arrow-despawn-rate: 1200
+    trident-despawn-rate: 1200
+    
+    # 防止无限水
+    # Prevent infinite water
+    prevent-moving-into-unloaded-chunks: true
+    
+    # 最大仇恨时间
+    # Max hate time
+    max-tnt-per-tick: 100
+    
+    # 最大tick时间
+    # Max tick time
+    max-tick-time:
+      tile: 50
+      entity: 50
+    
+    # 其他性能优化设置
+    # Other performance optimization settings
+    hunger:
+      jump-walk-exhaustion: 0.05
+      jump-sprint-exhaustion: 0.2
+      combat-exhaustion: 0.1
+      regen-exhaustion: 6.0
+      swim-multiplier: 0.01
+      sprint-multiplier: 0.1
+      other-multiplier: 0.0
+    max-tnt-per-tick: 100
+    view-distance: 8
+    chunks-per-tick: 650
+    clear-tick-list: false
+    random-light-updates: false
+    save-structure-info: true
+    verbose: false
+
+# 配置版本
+# Config version
+config-version: 12

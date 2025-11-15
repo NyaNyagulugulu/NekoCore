@@ -1,0 +1,108 @@
+# NekoCore Configuration File
+# 优化性能设置以提高TPS和降低内存使用
+# Optimized performance settings to improve TPS and reduce memory usage
+
+settings:
+  # 优化实体激活范围以减少不必要的实体更新
+  # Optimize entity activation ranges to reduce unnecessary entity updates
+  entity-activation-range:
+    # 怪物激活范围
+    # Monster activation range
+    monsters: 32
+    # 动物激活范围
+    # Animal activation range
+    animals: 16
+    # 其他实体激活范围
+    # Other entities activation range
+    misc: 16
+    # 水生生物激活范围
+    # Water animals activation range
+    water: 16
+    # 是否对非活跃村民进行tick
+    # Whether to tick inactive villagers
+    tick-inactive-villagers: false
+
+  # 优化区块加载设置
+  # Optimize chunk loading settings
+  load-permissions-yml-before-plugins: true
+  sleep-between-chunk-saves: false
+  region-file-cache-size: 256
+
+  # 性能优化设置
+  # Performance optimization settings
+  enable-player-collisions: false
+  save-empty-scoreboard-teams: false
+  use-alternative-luck-formula: false
+  bungee-online-mode: true
+
+  # 数据包和反垃圾设置
+  # Packet and anti-spam settings
+  incoming-packet-spam-threshold: 300
+
+  # 钟摆相关的优化设置
+  # Pendulum related optimization settings
+  disable-advancement-saving: false  # 除非特别需要，否则一般不推荐禁用
+  disable-item-saving: false
+
+  # 书本大小限制
+  # Book size limits
+  book-size:
+    page-max: 2560
+    total-multiplier: 0.98
+
+  # Tab补全设置
+  # Tab completion settings
+  spam-limiter:
+    tab-spam-increment: 10
+    tab-spam-limit: 500
+
+# 世界特定设置
+# World-specific settings
+world-settings:
+  default:
+    # 性能优化设置
+    # Performance optimization settings
+    optimize-explosions: true  # 优化爆炸计算
+    mob-spawner-tick-rate: 2  # 降低刷怪笼检查频率
+    container-update-tick-rate: 1  # 容器更新频率
+    max-entity-collisions: 4  # 限制最大实体碰撞数
+    allow-permanent-chunk-loaders: false  # 禁用永久区块加载器
+    game-mechanics:
+      allow-permanent-chunk-loaders: false
+      disable-unloaded-chunk-enderpearl-exploit: true
+    
+    # 区块设置
+    # Chunk settings
+    max-chunk-sends-per-tick: 81  # 每tick最大区块发送数
+    max-chunk-gens-per-tick: 10  # 每tick最大区块生成数
+    max-auto-save-chunks-per-tick: 24  # 每tick最大自动保存区块数
+    delay-chunk-unloads-by: 10s  # 延迟区块卸载
+    skip-entity-ticking-in-chunks-scheduled-for-unload: true  # 在计划卸载的区块中跳过实体tick
+    
+    # 实体设置
+    # Entity settings
+    armor-stands-tick: false  # 假人是否tick
+    armor-stands-do-collision-entity-lookups: false  # 假人是否进行碰撞实体查找
+    max-entity-ticks:
+      tick-radius: 4  # 实体tick半径
+      mob-count: 2  # 每tick最大生物数量
+    max-tick-time:
+      tile: 50  # 方块实体最大tick时间
+      entity: 50  # 实体最大tick时间
+
+# Timings设置
+# Timings settings
+timings:
+  enabled: true
+  verbose: false  # 降低详细度以提高性能
+  server-name-privacy: false
+  hidden-config-entries:
+    - database
+    - settings.bungeecord-addresses
+  history-interval: 300
+  history-length: 3600
+
+# 其他设置
+# Other settings
+verbose: false
+config-version: 13

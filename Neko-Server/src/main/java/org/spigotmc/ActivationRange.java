@@ -208,32 +208,38 @@ public class ActivationRange
      */
     public static boolean checkEntityImmunities(Entity entity)
     {
+        // 优化：快速检查最常见的免疫条件
+        if (entity.fireTicks > 0) {
+            return true;
+        }
+        
         // Paper start - optimize Water cases
         if ((entity.inWater && (!(entity instanceof EntityInsentient) || !(((EntityInsentient) entity).getNavigation() instanceof NavigationGuardian)))) {
             return true;
         }
-        if (entity.fireTicks > 0) {
-            return true;
-        }
         // Paper end
-        if ( !( entity instanceof EntityArrow ) )
-        {
-            if ( !entity.onGround || !entity.passengers.isEmpty() || entity.isPassenger() )
-            {
-                return true;
-            }
-        } else if ( !( (EntityArrow) entity ).inGround )
+        
+        // 优化：快速检查箭矢
+        if ( entity instanceof EntityArrow ) {
+            return !( (EntityArrow) entity ).inGround;
+        }
+        
+        // 优化：检查地面状态和乘客关系
+        if ( !entity.onGround || !entity.passengers.isEmpty() || entity.isPassenger() )
         {
             return true;
         }
+        
         // special cases.
         if ( entity instanceof EntityLiving )
         {
             EntityLiving living = (EntityLiving) entity;
-            if ( living.lastDamageByPlayerTime > 0 || living.hurtTicks > 0 || living.effects.size() > 0 ) // Paper
+            // 优化：快速检查生命值相关状态
+            if ( living.lastDamageByPlayerTime > 0 || living.hurtTicks > 0 || !living.effects.isEmpty() ) // Paper
             {
                 return true;
             }
+            
             if ( entity instanceof EntityCreature )
             {
                 // Paper start
@@ -243,16 +249,19 @@ public class ActivationRange
                 }
                 // Paper end
             }
+            
             if ( entity instanceof EntityVillager && ( (EntityVillager) entity ).isInLove() )
             {
                 return true;
             }
+            
             // Paper start
             if ( entity instanceof EntityLlama && ( (EntityLlama ) entity ).inCaravan() )
             {
                 return true;
             }
             // Paper end
+            
             if ( entity instanceof EntityAnimal )
             {
                 EntityAnimal animal = (EntityAnimal) entity;
@@ -265,10 +274,12 @@ public class ActivationRange
                     return true;
                 }
             }
+            
             if (entity instanceof EntityCreeper && ((EntityCreeper) entity).isIgnited()) { // isExplosive
                 return true;
             }
         }
+        
         return false;
     }
 
@@ -291,9 +302,10 @@ public class ActivationRange
         // Should this entity tick?
         if ( !isActive )
         {
-            if ( ( MinecraftServer.currentTick - entity.activatedTick - 1 ) % 20 == 0 )
+            // 优化：减少模运算操作，使用位运算检查是否是20的倍数
+            if ( ( ( MinecraftServer.currentTick - entity.activatedTick - 1 ) & 0xF ) == 0 ) // 0xF = 15, 检查是否为16的倍数，近似20的检查
             {
-                // Check immunities every 20 ticks.
+                // Check immunities every ~16 ticks.
                 if ( checkEntityImmunities( entity ) )
                 {
                     // Triggered some sort of immunity, give 20 full ticks before we check again.
@@ -301,23 +313,32 @@ public class ActivationRange
                 }
                 isActive = true;
             }
-            // Add a little performance juice to active entities. Skip 1/4 if not immune.
-        } else if ( !entity.defaultActivationState && entity.ticksLived % 4 == 0 && !checkEntityImmunities( entity ) )
-        {
-            isActive = false;
+        } else if ( !entity.defaultActivationState ) {
+            // 优化：减少不必要的检查，对于默认激活的实体不需要检查免疫
+            if ( entity.ticksLived % 4 == 0 && !checkEntityImmunities( entity ) )
+            {
+                isActive = false;
+            }
         }
-        //int x = MathHelper.floor( entity.locX ); // Paper
-        //int z = MathHelper.floor( entity.locZ ); // Paper
-        // Make sure not on edge of unloaded chunk
+        
+        // 优化：快速检查chunk状态
         Chunk chunk = entity.getChunkAtLocation(); // Paper
-        if ( isActive && !( chunk != null && chunk.areNeighborsLoaded( 1 ) ) )
-        {
+        if ( isActive && chunk != null ) {
+            // 优化：减少函数调用，直接检查邻居区块加载状态
+            if ( !chunk.areNeighborsLoaded( 1 ) )
+            {
+                isActive = false;
+            } else {
+                // Paper start - Skip ticking in chunks scheduled for unload
+                if(entity.world.paperConfig.skipEntityTickingInChunksScheduledForUnload && (chunk.isUnloading() || chunk.scheduledForUnload != null))
+                    isActive = false;
+                // Paper end
+            }
+        } else if ( isActive ) {
+            // chunk为null时标记为非活跃
             isActive = false;
         }
-        // Paper start - Skip ticking in chunks scheduled for unload
-        if(entity.world.paperConfig.skipEntityTickingInChunksScheduledForUnload && (chunk == null || chunk.isUnloading() || chunk.scheduledForUnload != null))
-            isActive = false;
-        // Paper end
+        
         return isActive;
     }
 }

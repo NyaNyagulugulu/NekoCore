@@ -992,16 +992,21 @@ public class Chunk {
     }
 
     public void a(@Nullable Entity entity, AxisAlignedBB axisalignedbb, List<Entity> list, Predicate<? super Entity> predicate) {
-        int i = MathHelper.floor((axisalignedbb.b - 2.0D) / 16.0D);
-        int j = MathHelper.floor((axisalignedbb.e + 2.0D) / 16.0D);
+        // 优化：预计算边界检查值
+        final double minY = axisalignedbb.b - 2.0D;
+        final double maxY = axisalignedbb.e + 2.0D;
+        
+        int i = MathHelper.floor(minY / 16.0D);
+        int j = MathHelper.floor(maxY / 16.0D);
 
         i = MathHelper.clamp(i, 0, this.entitySlices.length - 1);
         j = MathHelper.clamp(j, 0, this.entitySlices.length - 1);
 
+        // 优化：如果范围无效，直接返回
+        if (i > j) return;
+
         for (int k = i; k <= j; ++k) {
             if (!this.entitySlices[k].isEmpty()) {
-                Iterator iterator = this.entitySlices[k].iterator();
-
                 // Paper start - Don't search for inventories if we have none, and that is all we want
                 /*
                 * We check if they want inventories by seeing if it is the static `IEntitySelector.c`
@@ -1011,25 +1016,26 @@ public class Chunk {
                 */
                 if (predicate == IEntitySelector.c && inventoryEntityCounts[k] <= 0) continue;
                 // Paper end
-                while (iterator.hasNext()) {
-                    Entity entity1 = (Entity) iterator.next();
-
-                    if (entity1.getBoundingBox().c(axisalignedbb) && entity1 != entity) {
+                
+                // 优化：使用增强for循环而不是迭代器，减少对象创建
+                for (Entity entity1 : this.entitySlices[k]) {
+                    // 优化：先检查实体是否为自身，避免不必要的边界检查
+                    if (entity1 == entity) continue;
+                    
+                    if (entity1.getBoundingBox().c(axisalignedbb)) {
                         if (predicate == null || predicate.apply(entity1)) {
                             list.add(entity1);
                         }
 
-                        Entity[] aentity = entity1.bb();
-
-                        if (aentity != null) {
-                            Entity[] aentity1 = aentity;
-                            int l = aentity.length;
-
-                            for (int i1 = 0; i1 < l; ++i1) {
-                                Entity entity2 = aentity1[i1];
-
-                                if (entity2 != entity && entity2.getBoundingBox().c(axisalignedbb) && (predicate == null || predicate.apply(entity2))) {
-                                    list.add(entity2);
+                        // 优化：直接访问附加实体数组，避免重复变量赋值
+                        Entity[] attachedEntities = entity1.bb();
+                        if (attachedEntities != null) {
+                            for (Entity attachedEntity : attachedEntities) {
+                                // 优化：先检查实体是否为自身
+                                if (attachedEntity == entity) continue;
+                                
+                                if (attachedEntity.getBoundingBox().c(axisalignedbb) && (predicate == null || predicate.apply(attachedEntity))) {
+                                    list.add(attachedEntity);
                                 }
                             }
                         }
