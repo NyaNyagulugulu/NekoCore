@@ -80,7 +80,7 @@ public final class Bukkit {
         }
 
         Bukkit.server = server;
-        server.getLogger().info("This server is running " + getVersion());
+        server.getLogger().info("这个服务器正在运行 " + getVersion());
     }
 
     /**

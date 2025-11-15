@@ -49,7 +49,7 @@ public class VersionCommand extends BukkitCommand {
         if (!testPermission(sender)) return true;
 
         if (args.length == 0) {
-            sender.sendMessage("This server is running " + Bukkit.getVersion());
+            sender.sendMessage("这个服务器正在运行");
             tellHistory(sender); // Paper
             sendVersion(sender); // Paper - We'll say when, thanks
         } else {
