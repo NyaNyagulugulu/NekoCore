@@ -1,0 +1,156 @@
+From f689646087896900f4b4a46521b3a5d5487184b3 Mon Sep 17 00:00:00 2001
+From: Zach Brown <zach.brown@destroystokyo.com>
+Date: Tue, 1 Mar 2016 00:16:08 +0100
+Subject: [PATCH] POM changes
+
+
+diff --git a/pom.xml b/pom.xml
+index 7c81917d..3889d668 100644
+--- a/pom.xml
++++ b/pom.xml
+@@ -3,46 +3,46 @@
+          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+     <modelVersion>4.0.0</modelVersion>
+ 
+-    <groupId>org.spigotmc</groupId>
+-    <artifactId>spigot-api</artifactId>
++    <parent>
++        <groupId>com.destroystokyo.paper</groupId>
++        <artifactId>paper-parent</artifactId>
++        <version>dev-SNAPSHOT</version>
++    </parent>
++
++    <groupId>com.destroystokyo.paper</groupId>
++    <artifactId>paper-api</artifactId>
+     <version>1.12.2-R0.1-SNAPSHOT</version>
+     <packaging>jar</packaging>
+ 
+-    <name>Spigot-API</name>
+-    <url>https://www.spigotmc.org/</url>
++    <name>Paper-API</name>
++    <url>https://github.com/PaperMC/Paper</url>
+     <description>An enhanced plugin API for Minecraft servers.</description>
+ 
+     <properties>
+-        <maven.compiler.source>1.7</maven.compiler.source>
+-        <maven.compiler.target>1.7</maven.compiler.target>
++        <!-- Paper - Bump to 1.8 - Get off your dinosaur and get on this rocket ship... -->
++        <maven.compiler.source>1.8</maven.compiler.source>
++        <maven.compiler.target>1.8</maven.compiler.target>
+         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+     </properties>
+ 
+-    <distributionManagement>
+-        <repository>
+-            <id>spigotmc-releases</id>
+-            <url>https://hub.spigotmc.org/nexus/content/repositories/releases/</url>
+-        </repository>
+-        <snapshotRepository>
+-            <id>spigotmc-snapshots</id>
+-            <url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
+-        </snapshotRepository>
+-    </distributionManagement>
++    <pluginRepositories>
++        <pluginRepository>
++            <id>spigotmc-public</id>
++            <url>https://hub.spigotmc.org/nexus/content/groups/public/</url>
++        </pluginRepository>
++    </pluginRepositories>
+ 
+     <repositories>
+         <repository>
+             <id>spigotmc-public</id>
+             <url>https://hub.spigotmc.org/nexus/content/groups/public/</url>
+         </repository>
++        <repository>
++            <id>sonatype</id>
++            <url>https://oss.sonatype.org/content/groups/public/</url>
++        </repository>
+     </repositories>
+ 
+-    <pluginRepositories>
+-        <pluginRepository>
+-            <id>spigotmc-public</id>
+-            <url>https://hub.spigotmc.org/nexus/content/groups/public/</url>
+-        </pluginRepository>
+-    </pluginRepositories>
+-
+     <dependencies>
+         <dependency>
+             <groupId>commons-lang</groupId>
+@@ -56,6 +56,13 @@
+             <version>1.1.1</version>
+             <scope>compile</scope>
+         </dependency>
++        <!-- bundled with Minecraft, shouldn't ever change -->
++        <dependency>
++            <groupId>com.google.code.findbugs</groupId>
++            <artifactId>jsr305</artifactId>
++            <version>1.3.9</version>
++            <scope>compile</scope>
++        </dependency>
+         <!-- bundled with Minecraft, should be kept in sync -->
+         <dependency>
+             <groupId>com.google.guava</groupId>
+@@ -100,15 +107,12 @@
+     </dependencies>
+ 
+     <build>
++        <defaultGoal>clean install</defaultGoal>
+         <plugins>
+             <plugin>
+                 <groupId>org.apache.maven.plugins</groupId>
+                 <artifactId>maven-compiler-plugin</artifactId>
+                 <version>3.7.0</version>
+-                <configuration>
+-                    <!-- we use the Eclipse compiler as it doesn't need a JDK -->
+-                    <compilerId>eclipse</compilerId>
+-                </configuration>
+                 <dependencies>
+                     <!-- we need our custom version as it fixes some bugs on case sensitive file systems -->
+                     <dependency>
+@@ -131,6 +135,7 @@
+                     </execution>
+                 </executions>
+                 <configuration>
++                    <dependencyReducedPomLocation>${project.build.directory}/dependency-reduced-pom.xml</dependencyReducedPomLocation>
+                     <!-- when downloading via Maven we can pull depends individually -->
+                     <shadedArtifactAttached>true</shadedArtifactAttached>
+                 </configuration>
+@@ -138,33 +143,4 @@
+         </plugins>
+     </build>
+ 
+-    <profiles>
+-        <profile>
+-            <id>development</id>
+-            <build>
+-                <plugins>
+-                    <plugin>
+-                        <groupId>org.codehaus.mojo</groupId>
+-                        <artifactId>animal-sniffer-maven-plugin</artifactId>
+-                        <version>1.16</version>
+-                        <executions>
+-                            <execution>
+-                                <phase>process-classes</phase>
+-                                <goals>
+-                                    <goal>check</goal>
+-                                </goals>
+-                            </execution>
+-                        </executions>
+-                        <configuration>
+-                            <signature>
+-                                <groupId>org.codehaus.mojo.signature</groupId>
+-                                <artifactId>java17</artifactId>
+-                                <version>1.0</version>
+-                            </signature>
+-                        </configuration>
+-                    </plugin>
+-                </plugins>
+-            </build>
+-        </profile>
+-    </profiles>
+ </project>
+-- 
+2.19.0
+

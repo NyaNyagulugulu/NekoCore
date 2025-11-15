@@ -1,0 +1,34 @@
+package org.bukkit.craftbukkit.block;
+
+import com.destroystokyo.paper.loottable.CraftLootableBlockInventory; // Paper
+import net.minecraft.server.TileEntityHopper;
+import org.bukkit.Material;
+import org.bukkit.block.Block;
+import org.bukkit.block.Hopper;
+import org.bukkit.craftbukkit.inventory.CraftInventory;
+import org.bukkit.inventory.Inventory;
+
+public class CraftHopper extends CraftLootable<TileEntityHopper> implements Hopper, CraftLootableBlockInventory {
+
+    public CraftHopper(final Block block) {
+        super(block, TileEntityHopper.class);
+    }
+
+    public CraftHopper(final Material material, final TileEntityHopper te) {
+        super(material, te);
+    }
+
+    @Override
+    public Inventory getSnapshotInventory() {
+        return new CraftInventory(this.getSnapshot());
+    }
+
+    @Override
+    public Inventory getInventory() {
+        if (!this.isPlaced()) {
+            return this.getSnapshotInventory();
+        }
+
+        return new CraftInventory(this.getTileEntity());
+    }
+}
