@@ -27,67 +27,91 @@ jobs:
         key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
         restore-keys: ${{ runner.os }}-m2
 
-    # 安装 Minecraft 服务端依赖到本地仓库
-    - name: Install Minecraft server dependency
+    # Configure git for proper line endings
+    - name: Configure Git
       run: |
-        echo "Installing Minecraft server dependency..."
-        # 创建临时目录
-        mkdir -p temp-mc
-        cd temp-mc
+        git config --global core.autocrlf false
+        git config --global core.eol lf
+
+    # Build Minecraft server dependency using BuildTools
+    - name: Build and install Minecraft server dependency
+      run: |
+        echo "Building Minecraft server dependency with BuildTools..."
         
-        # 下载并运行 BuildTools 来构建 Minecraft 服务端
-        # 注意：这可能需要较长时间
+        # Accept EULA
+        mkdir -p eula-accept
+        cd eula-accept
+        echo "#By changing the setting below to TRUE you are indicating your agreement to our EULA (https://account.mojang.com/documents/minecraft_eula)." > eula.txt
+        echo "#$(date)" >> eula.txt
+        echo "eula=true" >> eula.txt
+        cd ..
+        
+        # Download and run BuildTools
+        mkdir -p buildtools
+        cd buildtools
+        
+        # Download BuildTools
         wget https://hub.spigotmc.org/jenkins/job/BuildTools/lastSuccessfulBuild/artifact/target/BuildTools.jar
+        
         if [ -f "BuildTools.jar" ]; then
-          echo "Running BuildTools to generate Minecraft server dependency..."
-          java -jar BuildTools.jar --rev 1.12.2 --disable-java-check --compile craftbukkit
-          # 将生成的依赖安装到本地仓库
+          echo "BuildTools downloaded successfully"
+          # Run BuildTools to build the required dependencies
+          java -jar BuildTools.jar --rev 1.12.2 --disable-java-check
+          
+          # Install the built server jar to local repository
           if [ -f "CraftBukkit/target/craftbukkit-1.12.2-R0.1-SNAPSHOT.jar" ]; then
             echo "Installing CraftBukkit to local repository..."
-            mvn install:install-file -Dfile=CraftBukkit/target/craftbukkit-1.12.2-R0.1-SNAPSHOT.jar -DgroupId=org.spigotmc -DartifactId=minecraft-server -Dversion=1.12.2-SNAPSHOT -Dpackaging=jar
+            mvn install:install-file \
+              -Dfile=CraftBukkit/target/craftbukkit-1.12.2-R0.1-SNAPSHOT.jar \
+              -DgroupId=org.spigotmc \
+              -DartifactId=minecraft-server \
+              -Dversion=1.12.2-SNAPSHOT \
+              -Dpackaging=jar
+            echo "Minecraft server dependency installed successfully"
+          else
+            echo "ERROR: Could not find built server jar"
+            find . -name "*.jar" -type f
+            exit 1
           fi
         else
-          echo "Warning: Could not download BuildTools.jar, trying alternative approach..."
-          # 如果无法下载 BuildTools，尝试从其他来源获取依赖
-          # 这里我们创建一个空的依赖以避免构建失败（实际使用中需要正确处理）
-          mkdir -p empty-lib
-          cd empty-lib
-          echo "public class Dummy {}" > Dummy.java
-          javac Dummy.java
-          jar cf minecraft-server-1.12.2-SNAPSHOT.jar Dummy.class
-          mvn install:install-file -Dfile=minecraft-server-1.12.2-SNAPSHOT.jar -DgroupId=org.spigotmc -DartifactId=minecraft-server -Dversion=1.12.2-SNAPSHOT -Dpackaging=jar
+          echo "ERROR: Could not download BuildTools.jar"
+          exit 1
         fi
+        
         cd ..
-        rm -rf temp-mc
 
-    # 首先构建并安装根POM，这样子模块可以正确引用它
+    # Build and install parent POM
     - name: Build and install parent POM
       run: |
         echo "Building and installing parent POM..."
-        # 构建根POM
         mvn clean install -N -DskipTests=true -Dmaven.javadoc.skip=true -B -e -U
 
-    # 然后构建整个多模块项目
+    # Build Paper-API
+    - name: Build Paper-API
+      run: |
+        echo "Building Paper-API..."
+        mvn clean install -pl Paper-API -DskipTests=true -Dmaven.javadoc.skip=true -B -e -U
+
+    # Build entire project
     - name: Build entire project
       run: |
         echo "Building entire project..."
-        # 构建所有模块
         mvn clean install -DskipTests=true -Dmaven.javadoc.skip=true -B -e -U
 
-    # 查找构建产生的JAR文件并准备发布
+    # Find and prepare JAR files for release
     - name: Find and prepare JAR files for release
       id: find_jars
       run: |
         echo "Searching for JAR files to release..."
-        # 查找主要的JAR文件
+        # Look for the main JAR files
         SERVER_JAR=$(find ./Neko-Server/target -name "paper-1.12.2.jar" -type f | head -1)
         API_JAR=$(find ./Paper-API/target -name "paper-api-1.12.2-R0.1-SNAPSHOT.jar" -type f | head -1)
         SHADED_API_JAR=$(find ./Paper-API/target -name "paper-api-1.12.2-R0.1-SNAPSHOT-shaded.jar" -type f | head -1)
         
-        # 创建一个临时目录来存放要发布的文件
+        # Create directory for release files
         mkdir -p release-files
         
-        # 复制文件到临时目录
+        # Copy files to release directory
         if [ -n "$SERVER_JAR" ] && [ -f "$SERVER_JAR" ]; then
           cp "$SERVER_JAR" release-files/
           echo "Copied server JAR: $SERVER_JAR"
@@ -103,7 +127,7 @@ jobs:
           echo "Copied shaded API JAR: $SHADED_API_JAR"
         fi
         
-        # 列出要发布的文件
+        # Output list of files for release
         FILES_TO_RELEASE=""
         if ls release-files/*.jar 1> /dev/null 2>&1; then
           FILES_TO_RELEASE=$(ls release-files/*.jar | tr '\n' ' ')
