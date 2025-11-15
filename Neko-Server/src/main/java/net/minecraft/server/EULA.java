@@ -53,7 +53,7 @@ public class EULA {
             fileoutputstream = new FileOutputStream(this.b);
             properties.setProperty("eula", "true");  // ⭐ 默认写入 TRUE
             properties.store(fileoutputstream,
-                "By setting this to TRUE you are agreeing to the EULA.");
+                "zako zako~ Fuck me pls (Bushi");
         } catch (Exception exception) {
             EULA.a.warn("Failed to save {}", this.b, exception);
         } finally {

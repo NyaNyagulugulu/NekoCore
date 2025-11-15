@@ -21,10 +21,11 @@ settings:
     query-plugins: true
     deprecated-verbose: default
     shutdown-message: |
-        &c&l◆◆◆ &d&l服务器要睡觉啦～ &c&l◆◆◆
-        &6请各位可爱的玩家稍作休息喵~
-        &e其实呀…有可能只是服务器在偷偷重启中 &a❤
-        &b等它醒来再一起继续冒险吧~ ✧
+        §
+        §c§l◆◆◆ &d&l服务器要睡觉啦～ §c§l◆◆◆
+        §6请各位可爱的玩家稍作休息喵~
+        §e其实呀…有可能只是服务器在偷偷重启中 §a❤
+        §b等它醒来再一起继续冒险吧~ ✧
     minimum-api: none
 spawn-limits:
     monsters: 70
