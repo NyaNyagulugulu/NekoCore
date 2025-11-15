@@ -52,7 +52,7 @@ public class VersionCommand extends BukkitCommand {
             String fullVersion = Bukkit.getVersion();
             // 移除 "(MC: ...)" 部分
             String cleanVersion = fullVersion.replaceAll("\\(MC: [^)]+\\)", "").trim();
-            sender.sendMessage("这个服务器正在运行 " + cleanVersion);
+            sender.sendMessage("This Server run " + cleanVersion);
             tellHistory(sender); // Paper
             sendVersion(sender); // Paper - We'll say when, thanks
         } else {

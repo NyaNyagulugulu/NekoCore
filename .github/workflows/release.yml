@@ -27,51 +27,62 @@ jobs:
         key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
         restore-keys: ${{ runner.os }}-m2
 
-    # 初始化项目结构 - Paper项目需要通过特殊方法构建
-    - name: Prepare Paper project structure
+    # 首先构建并安装根POM，这样子模块可以正确引用它
+    - name: Build and install parent POM
       run: |
-        echo "Checking project structure..."
-        ls -la
-        find . -name "pom.xml" -exec echo "Found: {}" \;
-        echo "Root pom.xml:"
-        cat pom.xml || echo "No root pom.xml found"
-        echo "Paper-API pom.xml parent reference:"
-        grep -A 5 -B 5 "paper-parent" Paper-API/pom.xml || echo "No paper-parent reference found"
+        echo "Building and installing parent POM..."
+        # 构建根POM
+        mvn clean install -N -DskipTests=true -Dmaven.javadoc.skip=true -B -e -U
 
-    # 修复Paper API的父POM问题 - 通过构建整个项目结构解决
-    - name: Build Paper project with proper module handling
+    # 然后构建整个多模块项目
+    - name: Build entire project
       run: |
-        # 首先，构建整个多模块项目
-        echo "Building the entire project..."
-        # 使用mvn命令构建整个项目，跳过测试以加速
+        echo "Building entire project..."
+        # 构建所有模块
         mvn clean install -DskipTests=true -Dmaven.javadoc.skip=true -B -e -U
 
-    # 检查构建结果并查找JAR文件
-    - name: Find built JAR files
+    # 查找构建产生的JAR文件并准备发布
+    - name: Find and prepare JAR files for release
       id: find_jars
       run: |
-        # 查找所有构建产生的JAR文件
-        echo "Searching for JAR files in target directories..."
-        find . -name "*.jar" -not -path "./.git/*" -not -path "./.github/*" -not -path "./target/*" | grep -v "\-sources\.jar" | grep -v "\-javadoc\.jar"
-        echo "JAR files in Neko-Server:"
-        find ./Neko-Server/target -name "*.jar" -not -path "./.git/*" | grep -v "\-sources\.jar" | grep -v "\-javadoc\.jar"
-        echo "JAR files in Paper-API:"
-        find ./Paper-API/target -name "*.jar" -not -path "./.git/*" | grep -v "\-sources\.jar" | grep -v "\-javadoc\.jar"
-        # 搜索最终的JAR文件
-        JARS=$(find . -name "*.jar" -not -path "./.git/*" -not -path "./.github/*" -not -path "./target/*" | grep -v "\-sources\.jar" | grep -v "\-javadoc\.jar" | head -10)
-        if [ -z "$JARS" ]; then
-          # 尝试在target目录中查找
-          JARS=$(find ./Neko-Server/target ./Paper-API/target -name "*.jar" -not -path "./.git/*" | grep -v "\-sources\.jar" | grep -v "\-javadoc\.jar" | head -10)
+        echo "Searching for JAR files to release..."
+        # 查找主要的JAR文件
+        SERVER_JAR=$(find ./Neko-Server/target -name "paper-1.12.2.jar" -type f | head -1)
+        API_JAR=$(find ./Paper-API/target -name "paper-api-1.12.2-R0.1-SNAPSHOT.jar" -type f | head -1)
+        SHADED_API_JAR=$(find ./Paper-API/target -name "paper-api-1.12.2-R0.1-SNAPSHOT-shaded.jar" -type f | head -1)
+        
+        # 创建一个临时目录来存放要发布的文件
+        mkdir -p release-files
+        
+        # 复制文件到临时目录
+        if [ -n "$SERVER_JAR" ] && [ -f "$SERVER_JAR" ]; then
+          cp "$SERVER_JAR" release-files/
+          echo "Copied server JAR: $SERVER_JAR"
         fi
-        echo "jars<<EOF" >> $GITHUB_OUTPUT
-        echo "$JARS" >> $GITHUB_OUTPUT
-        echo "EOF" >> $GITHUB_OUTPUT
-        echo "Found $(echo "$JARS" | wc -l) JAR files for release"
+        
+        if [ -n "$API_JAR" ] && [ -f "$API_JAR" ]; then
+          cp "$API_JAR" release-files/
+          echo "Copied API JAR: $API_JAR"
+        fi
+        
+        if [ -n "$SHADED_API_JAR" ] && [ -f "$SHADED_API_JAR" ]; then
+          cp "$SHADED_API_JAR" release-files/
+          echo "Copied shaded API JAR: $SHADED_API_JAR"
+        fi
+        
+        # 列出要发布的文件
+        FILES_TO_RELEASE=""
+        if ls release-files/*.jar 1> /dev/null 2>&1; then
+          FILES_TO_RELEASE=$(ls release-files/*.jar | tr '\n' ' ')
+        fi
+        
+        echo "files=$FILES_TO_RELEASE" >> $GITHUB_OUTPUT
+        echo "Found files for release: $FILES_TO_RELEASE"
 
     - name: Release
       uses: softprops/action-gh-release@v1
-      if: steps.find_jars.outputs.jars != ''
+      if: steps.find_jars.outputs.files != ''
       with:
-        files: ${{ steps.find_jars.outputs.jars }}
+        files: ${{ steps.find_jars.outputs.files }}
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

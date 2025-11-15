@@ -252,8 +252,8 @@ public class PaperConfig {
         packetInSpamThreshold = getInt("settings.incoming-packet-spam-threshold", 300);
     }
 
-    public static String flyingKickPlayerMessage = "Flying is not enabled on this server";
-    public static String flyingKickVehicleMessage = "Flying is not enabled on this server";
+    public static String flyingKickPlayerMessage = "飞行没有在这个服务器上启用";
+    public static String flyingKickVehicleMessage = "飞行没有在这个服务器上启用";
     private static void flyingKickMessages() {
         flyingKickPlayerMessage = getString("messages.kick.flying-player", flyingKickPlayerMessage);
         flyingKickVehicleMessage = getString("messages.kick.flying-vehicle", flyingKickVehicleMessage);

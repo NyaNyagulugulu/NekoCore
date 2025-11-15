@@ -5,8 +5,9 @@
 
     <parent>
         <groupId>com.destroystokyo.paper</groupId>
-        <artifactId>paper-parent</artifactId>
+        <artifactId>neko-root</artifactId>
         <version>dev-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
 
     <groupId>com.destroystokyo.paper</groupId>
