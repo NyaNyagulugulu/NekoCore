@@ -2617,8 +2617,13 @@ public abstract class World implements IBlockAccess {
         return this.getEntities(entity, axisalignedbb, IEntitySelector.e);
     }
 
+    // 线程本地缓存，用于减少getEntities方法中的临时对象创建
+    private static final ThreadLocal<List<Entity>> entityListCache = ThreadLocal.withInitial(() -> new ArrayList<>());
+
     public List<Entity> getEntities(@Nullable Entity entity, AxisAlignedBB axisalignedbb, @Nullable Predicate<? super Entity> predicate) {
-        ArrayList arraylist = Lists.newArrayList();
+        List<Entity> list = entityListCache.get();
+        list.clear(); // 重用列表，减少垃圾回收
+        
         int i = MathHelper.floor((axisalignedbb.a - 2.0D) / 16.0D);
         int j = MathHelper.floor((axisalignedbb.d + 2.0D) / 16.0D);
         int k = MathHelper.floor((axisalignedbb.c - 2.0D) / 16.0D);
@@ -2627,12 +2632,13 @@ public abstract class World implements IBlockAccess {
         for (int i1 = i; i1 <= j; ++i1) {
             for (int j1 = k; j1 <= l; ++j1) {
                 if (this.isChunkLoaded(i1, j1, true)) {
-                    this.getChunkAt(i1, j1).a(entity, axisalignedbb, arraylist, predicate);
+                    this.getChunkAt(i1, j1).a(entity, axisalignedbb, list, predicate);
                 }
             }
         }
 
-        return arraylist;
+        // 创建一个固定大小的列表返回，避免外部修改缓存
+        return new ArrayList<>(list);
     }
 
     public <T extends Entity> List<T> a(Class<? extends T> oclass, Predicate<? super T> predicate) {

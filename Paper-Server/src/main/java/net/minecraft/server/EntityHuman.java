@@ -1,13 +1,14 @@
-package net.minecraft.server;
-
-import com.google.common.base.Predicate;
-import com.google.common.collect.Lists;
-import com.mojang.authlib.GameProfile;
-import java.nio.charset.StandardCharsets;
-import java.util.Iterator;
-import java.util.List;
-import java.util.UUID;
-import javax.annotation.Nullable;
+package net.minecraft.server;
+
+import com.google.common.base.Predicate;
+import com.google.common.collect.Lists;
+import com.mojang.authlib.GameProfile;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.UUID;
+import javax.annotation.Nullable;
 
 // CraftBukkit start
 import org.bukkit.craftbukkit.entity.CraftHumanEntity;
@@ -955,6 +956,9 @@ public abstract class EntityHuman extends EntityLiving {
     }
     // Paper end
 
+    // 预分配的临时变量，减少垃圾回收
+    private static final ThreadLocal<List<EntityLiving>> sweepAttackList = ThreadLocal.withInitial(() -> new ArrayList<EntityLiving>());
+    
     public void attack(Entity entity) {
         if (entity.bd()) {
             if (!entity.t(this)) {
@@ -1058,18 +1062,17 @@ public abstract class EntityHuman extends EntityLiving {
                         }
 
                         if (flag3) {
-                            // 1.8扫击攻击伤害计算
+                            // 1.8扫击攻击伤害计算 - 使用线程本地缓存的列表减少GC
+                            List<EntityLiving> sweepAttackTargets = sweepAttackList.get();
+                            sweepAttackTargets.clear(); // 重用列表，减少垃圾回收
+                            sweepAttackTargets.addAll(this.world.a(EntityLiving.class, entity.getBoundingBox().grow(1.0D, 0.25D, 1.0D)));
+                            
                             float f4 = 1.0F + EnchantmentManager.a((EntityLiving) this) * f;
-                            List list = this.world.a(EntityLiving.class, entity.getBoundingBox().grow(1.0D, 0.25D, 1.0D));
-                            Iterator iterator = list.iterator();
-
-                            while (iterator.hasNext()) {
-                                EntityLiving entityliving = (EntityLiving) iterator.next();
-
+                            for (EntityLiving entityliving : sweepAttackTargets) {
                                 if (entityliving != this && entityliving != entity && !this.r(entityliving) && this.h(entityliving) < 9.0D) {
                                     // CraftBukkit start - Only apply knockback if the damage hits
                                     if (entityliving.damageEntity(DamageSource.playerAttack(this).sweep(), f4)) {
-                                    entityliving.a(this, 0.4F, (double) MathHelper.sin(this.yaw * 0.017453292F), (double) (-MathHelper.cos(this.yaw * 0.017453292F)));
+                                        entityliving.a(this, 0.4F, (double) MathHelper.sin(this.yaw * 0.017453292F), (double) (-MathHelper.cos(this.yaw * 0.017453292F)));
                                     }
                                     // CraftBukkit end
                                 }

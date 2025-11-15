@@ -1373,19 +1373,24 @@ public abstract class PlayerList {
         this.whitelist.setEnabled(flag); // Paper
     }
 
+    // 线程本地缓存，用于减少getPlayersByName方法中的临时对象创建
+    private static final ThreadLocal<List<EntityPlayer>> playerListCache = ThreadLocal.withInitial(() -> new ArrayList<>());
+
     public List<EntityPlayer> b(String s) {
-        ArrayList arraylist = Lists.newArrayList();
+        List<EntityPlayer> list = playerListCache.get();
+        list.clear(); // 重用列表，减少垃圾回收
         Iterator iterator = this.players.iterator();
 
         while (iterator.hasNext()) {
             EntityPlayer entityplayer = (EntityPlayer) iterator.next();
 
             if (entityplayer.A().equals(s)) {
-                arraylist.add(entityplayer);
+                list.add(entityplayer);
             }
         }
 
-        return arraylist;
+        // 创建一个固定大小的列表返回，避免外部修改缓存
+        return new ArrayList<>(list);
     }
 
     public int s() {
