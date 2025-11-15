@@ -959,54 +959,56 @@ public abstract class EntityHuman extends EntityLiving {
     // 预分配的临时变量，减少垃圾回收
     private static final ThreadLocal<List<EntityLiving>> sweepAttackList = ThreadLocal.withInitial(() -> new ArrayList<EntityLiving>());
     
-    public void attack(Entity entity) {
-        if (entity.bd()) {
-            if (!entity.t(this)) {
-                // 1.8攻击机制：使用武器攻击伤害
-                ItemStack itemstack = this.b(EnumHand.MAIN_HAND);
-                float f = (float) this.getAttributeInstance(GenericAttributes.ATTACK_DAMAGE).getValue(); // 基础攻击力
-                float f1 = 0.0F; // 附魔伤害加成
-
-                if (entity instanceof EntityLiving) {
-                    f1 = EnchantmentManager.a(itemstack, ((EntityLiving) entity).getMonsterType());
-                } else {
-                    f1 = EnchantmentManager.a(itemstack, EnumMonsterType.UNDEFINED);
-                }
-
-                // 1.8版本没有攻击冷却机制，始终认为攻击准备充分
-                float f2 = 1.0F; // 始终为最大值，模拟无冷却状态
-
-                // 应用1.8的伤害计算方式
-                f *= 0.2F + f2 * f2 * 0.8F;
-                f1 *= f2;
-                
-                // 重置攻击冷却（虽然我们不使用它，但保留原代码结构）
-                this.ds();
-                
-                if (f > 0.0F || f1 > 0.0F) {
-                    // 始终认为是完全充能的攻击
-                    boolean flag = f2 > 0.9F;
-                    boolean flag1 = false;
-                    byte b0 = 0;
-                    int i = b0 + EnchantmentManager.b((EntityLiving) this);
-
-                    if (this.isSprinting() && flag) {
-                        sendSoundEffect(this, this.locX, this.locY, this.locZ, SoundEffects.fw, this.bK(), 1.0F, 1.0F); // Paper - send while respecting visibility
-                        ++i;
-                        flag1 = true;
-                    }
-
-                    // 1.8暴击条件：跳跃攻击（下落距离>0）且不处于地面
-                    boolean flag2 = flag && this.fallDistance > 0.0F && !this.onGround && !this.m_() && !this.isInWater() && !this.hasEffect(MobEffects.BLINDNESS) && !this.isPassenger() && entity instanceof EntityLiving;
-                    flag2 = flag2 && !world.paperConfig.disablePlayerCrits; // Paper
-                    // 1.8版本中，冲刺状态不影响暴击
-                    // flag2 = flag2 && !this.isSprinting();
-                    
-                    // 1.8暴击倍数为1.5
-                    if (flag2) {
-                        f *= 1.5F;
-                    }
-
+    public void attack(Entity entity) {
+        if (entity.bd()) {
+            if (!entity.t(this)) {
+                // 1.8攻击机制：使用武器攻击伤害
+                ItemStack itemstack = this.b(EnumHand.MAIN_HAND);
+                float f = (float) this.getAttributeInstance(GenericAttributes.ATTACK_DAMAGE).getValue(); // 基础攻击力
+                float f1 = 0.0F; // 附魔伤害加成
+
+                if (entity instanceof EntityLiving) {
+                    f1 = EnchantmentManager.a(itemstack, ((EntityLiving) entity).getMonsterType());
+                } else {
+                    f1 = EnchantmentManager.a(itemstack, EnumMonsterType.UNDEFINED);
+                }
+
+                // 1.8版本没有攻击冷却机制，始终认为攻击准备充分
+                float f2 = 1.0F; // 始终为最大值，模拟无冷却状态
+
+                // 应用1.8的伤害计算方式
+                f *= 0.2F + f2 * f2 * 0.8F;
+                f1 *= f2;
+                
+                // 重置攻击冷却（虽然我们不使用它，但保留原代码结构）
+                this.ds();
+                
+                if (f > 0.0F || f1 > 0.0F) {
+                    // 始终认为是完全充能的攻击
+                    boolean flag = f2 > 0.9F;
+                    boolean flag1 = false;
+                    byte b0 = 0;
+                    int i = b0 + EnchantmentManager.b((EntityLiving) this);
+
+                    if (this.isSprinting() && flag) {
+                        sendSoundEffect(this, this.locX, this.locY, this.locZ, SoundEffects.fw, this.bK(), 1.0F, 1.0F); // Paper - send while respecting visibility
+                        ++i;
+                        flag1 = true;
+                    }
+
+                    // 1.8暴击条件：跳跃攻击（下落距离>0）且不处于地面
+                    boolean flag2 = flag && this.fallDistance > 0.0F && !this.onGround && !this.m_() && !this.isInWater() && !this.hasEffect(MobEffects.BLINDNESS) && !this.isPassenger() && entity instanceof EntityLiving;
+                    flag2 = flag2 && !world.paperConfig.disablePlayerCrits; // Paper
+                    // 1.8版本中，冲刺状态不影响暴击
+                    // flag2 = flag2 && !this.isSprinting();
+                    
+                    // 1.8暴击倍数为1.5
+                    if (flag2) {
+                        f *= 1.5F;
+                    }
+
+                    // 添加武器基础伤害
+                    f += getWeaponDamage(itemstack); // 武器基础伤害加成
                     f += f1;
                     boolean flag3 = false;
                     double d0 = (double) (this.J - this.I);
@@ -2033,12 +2035,23 @@ public abstract class EntityHuman extends EntityLiving {
             EntityHuman.EnumChatVisibility[] aentityhuman_enumchatvisibility = values();
             int i = aentityhuman_enumchatvisibility.length;
 
-            for (int j = 0; j < i; ++j) {
-                EntityHuman.EnumChatVisibility entityhuman_enumchatvisibility = aentityhuman_enumchatvisibility[j];
-
-                EntityHuman.EnumChatVisibility.d[entityhuman_enumchatvisibility.e] = entityhuman_enumchatvisibility;
-            }
-
-        }
-    }
+            for (int j = 0; j < i; ++j) {
+                EntityHuman.EnumChatVisibility entityhuman_enumchatvisibility = aentityhuman_enumchatvisibility[j];
+
+                EntityHuman.EnumChatVisibility.d[entityhuman_enumchatvisibility.e] = entityhuman_enumchatvisibility;
+            }
+
+        }
+    }
+
+    // 获取武器基础伤害
+    private float getWeaponDamage(ItemStack itemstack) {
+        // 根据Minecraft 1.8.8的武器伤害值
+        if (itemstack.getItem() instanceof ItemSword) {
+            ItemSword itemsword = (ItemSword) itemstack.getItem();
+            return (float) itemsword.g(); // 获取武器伤害值
+        }
+        // 其他工具的伤害值可以在这里添加
+        return 0.0F; // 默认无额外伤害
+    }
 }
