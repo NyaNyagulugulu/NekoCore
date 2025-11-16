@@ -96,7 +96,7 @@ public class NekoAntiCheating {
                 flyDetectionListener.checkAllPlayers();
             }
         };
-        flyDetectionTask.runTaskTimerAsynchronously(plugin, 1L, 1L); // 每1 tick执行一次
+        flyDetectionTask.runTaskTimer(plugin, 1L, 1L); // 每1 tick执行一次（同步）
         
         // 每秒执行一次VL衰减
         vlDecayTask = new BukkitRunnable() {
