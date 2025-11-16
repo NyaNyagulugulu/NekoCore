@@ -4,8 +4,10 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,15 +21,20 @@ public class FlyDetectionListener {
     private final Map<String, Integer> playerVLs = new HashMap<>();
     private final Map<String, Integer> consecutiveAirTicks = new HashMap<>();
     private int maxVL = 10;
-    private int vlDecayIntervalTicks = 30; // 建议由主线程驱动定时衰减
-    private List<String> punishCommands = List.of("kick {player} 禁止飞行作弊");
+    private int vlDecayIntervalTicks = 30; // VL衰减间隔ticks
+    private List<String> punishCommands = Arrays.asList("kick {player} 禁止飞行作弊");
+    private NekoAntiCheating plugin;
 
-    public FlyDetectionListener() {}
+    public FlyDetectionListener(NekoAntiCheating plugin) {
+        this.plugin = plugin;
+        reloadConfig();
+    }
 
     // 主动检测所有在线玩家（每tick或定时调用）
     public void checkAllPlayers() {
         for (Player player : Bukkit.getOnlinePlayers()) {
-            if (player.isOp() || player.getAllowFlight() || player.isGliding()) continue;
+            // 检查是否拥有豁免权限
+            if (player.hasPermission("nac.bypass.fly") || player.isOp() || player.getAllowFlight() || player.isGliding()) continue;
             String playerName = player.getName();
             Location loc = player.getLocation();
             boolean onGround = player.isOnGround();
@@ -89,13 +96,21 @@ public class FlyDetectionListener {
         return t == Material.LADDER || t == Material.VINE;
     }
 
-    // 可选：按需设置参数
-    public void setMaxVL(int maxVL) { this.maxVL = maxVL; }
-    public void setVlDecayIntervalTicks(int ticks) { this.vlDecayIntervalTicks = ticks; }
-    public void setPunishCommands(List<String> cmds) { this.punishCommands = cmds; }
-
     // 可暴露getVL接口用于外部调用
     public int getPlayerVL(String name) {
         return playerVLs.getOrDefault(name, 0);
+    }
+    
+    // 重载配置
+    public void reloadConfig() {
+        YamlConfiguration config = plugin.getNACConfig();
+        this.maxVL = config.getInt("fly.max_vl", 10);
+        this.punishCommands = config.getStringList("fly.commands_on_max_vl");
+        if (this.punishCommands.isEmpty()) {
+            this.punishCommands = Arrays.asList("kick {player} 飞你妈呢");
+        }
+        // 将秒转换为tick
+        int decayIntervalSeconds = config.getInt("fly.vl_decay_interval_seconds", 30);
+        this.vlDecayIntervalTicks = decayIntervalSeconds * 20; // 假设20 ticks per second
     }
 }

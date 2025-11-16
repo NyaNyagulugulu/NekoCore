@@ -1,15 +1,12 @@
 package org.bukkit.anticheating;
 
 import org.bukkit.Bukkit;
-import org.bukkit.command.CommandMap;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.event.Listener;
 import org.bukkit.plugin.Plugin;
-import org.bukkit.command.defaults.NacCommand;
+import org.bukkit.scheduler.BukkitRunnable;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -21,6 +18,8 @@ public class NekoAntiCheating {
     private Logger logger;
     private final Map<String, Integer> playerVLs = new HashMap<>();
     private FlyDetectionListener flyDetectionListener;
+    private BukkitRunnable flyDetectionTask;
+    private BukkitRunnable vlDecayTask;
 
     public NekoAntiCheating() {}
 
@@ -42,20 +41,9 @@ public class NekoAntiCheating {
         if (config.getBoolean("enable-NAC", true)) {
             loadFlyDetection();
 
-            Plugin paperPlugin = Bukkit.getPluginManager().getPlugin("Paper");
-            if (paperPlugin != null) {
-                Bukkit.getPluginManager().registerEvents(flyDetectionListener, paperPlugin);
-            } else {
-                Plugin[] plugins = Bukkit.getPluginManager().getPlugins();
-                if (plugins.length > 0) {
-                    Bukkit.getPluginManager().registerEvents(flyDetectionListener, plugins[0]);
-                }
-            }
-
-            registerCommands();
-            logger.info("\n§\n§c§l◆ NekoCoreCiallo～(∠・ω< )⌒★私のおなにー见てください \n§6◆ NekoAntiCheating 已启用喵～ \n§\n");
+            logger.info("\n§c§l◆ NekoCoreCiallo～(∠・ω< )⌒★私のおなにー见てください \n§6◆ NekoAntiCheating 已启用喵～ \n");
         } else {
-            logger.info("\n§\n§7 NekoCoreCiallo～(∠・ω< )⌒★私のおなにー见てください \n§b NekoAntiCheating 已在配置中禁用喵～ \n§\n");
+            logger.info("\n§7 NekoCoreCiallo～(∠・ω< )⌒★私のおなにー见てください \n§b NekoAntiCheating 已在配置中禁用喵～ \n");
         }
     }
 
@@ -78,18 +66,6 @@ public class NekoAntiCheating {
         }
     }
 
-    private void registerCommands() {
-        try {
-            final Field bukkitCommandMap = Bukkit.getServer().getClass().getDeclaredField("commandMap");
-            bukkitCommandMap.setAccessible(true);
-            CommandMap commandMap = (CommandMap) bukkitCommandMap.get(Bukkit.getServer());
-
-            commandMap.register("nac", new NacCommand("nac"));
-        } catch (Exception e) {
-            logger.severe("无法注册NAC命令: " + e.getMessage());
-        }
-    }
-
     public static NekoAntiCheating getInstance() { return instance; }
     public YamlConfiguration getNACConfig() { return config; }
     public void reloadNACConfig() {
@@ -101,4 +77,77 @@ public class NekoAntiCheating {
         }
     }
     public Map<String, Integer> getPlayerVLs() { return playerVLs; }
+    
+    // 获取飞行检测监听器实例
+    public FlyDetectionListener getFlyDetectionListener() {
+        return flyDetectionListener;
+    }
+    
+    // 供服务器内部调用以启动调度器
+    public void startScheduler(Plugin plugin) {
+        if (flyDetectionListener == null) {
+            return;
+        }
+        
+        // 每tick执行一次飞行检测（约20次/秒）
+        flyDetectionTask = new BukkitRunnable() {
+            @Override
+            public void run() {
+                flyDetectionListener.checkAllPlayers();
+            }
+        };
+        flyDetectionTask.runTaskTimerAsynchronously(plugin, 1L, 1L); // 每1 tick执行一次
+        
+        // 每秒执行一次VL衰减
+        vlDecayTask = new BukkitRunnable() {
+            @Override
+            public void run() {
+                flyDetectionListener.decayVLs();
+            }
+        };
+        vlDecayTask.runTaskTimer(plugin, 20L, 20L); // 每秒执行一次（20 ticks）
+        
+        logger.info("[NAC] 调度器已启动");
+    }
+    
+    // 作为内建功能启动调度器（不依赖插件）
+    public void startSchedulerAsBuiltin(org.bukkit.Server server) {
+        if (flyDetectionListener == null) {
+            return;
+        }
+        
+        // 由于Bukkit的调度器需要Plugin实例，我们尝试获取一个可用的插件
+        // 或者使用CraftServer的插件管理器获取一个插件
+        org.bukkit.plugin.Plugin[] plugins;
+        try {
+            plugins = server.getPluginManager().getPlugins();
+        } catch (Exception e) {
+            logger.severe("无法获取插件列表: " + e.getMessage());
+            return;
+        }
+        
+        org.bukkit.plugin.Plugin mainPlugin = null;
+        if (plugins.length > 0) {
+            // 通常Plugin[0]会是主插件，但我们可以尝试找到一个合适的插件
+            mainPlugin = plugins[0];
+        } else {
+            // 如果没有插件，创建一个虚拟的插件或使用其他方式
+            // 但在这个API层，我们无法创建插件，所以我们需要在服务器端处理
+            logger.warning("没有可用插件来启动NAC调度器");
+            return;
+        }
+        
+        // 使用找到的插件启动调度器
+        startScheduler(mainPlugin);
+    }
+    
+    // 供服务器内部调用以关闭调度器
+    public void shutdown() {
+        if (flyDetectionTask != null) {
+            flyDetectionTask.cancel();
+        }
+        if (vlDecayTask != null) {
+            vlDecayTask.cancel();
+        }
+    }
 }

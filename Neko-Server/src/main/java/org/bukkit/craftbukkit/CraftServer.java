@@ -216,8 +216,8 @@ public final class CraftServer implements Server {
             getLogger().info("Console input is disabled due to --noconsole command argument");
         }
 
-        configuration = YamlConfiguration.loadConfiguration(getConfigFile());
-        configuration.options().copyDefaults(true);
+        configuration = YamlConfiguration.loadConfiguration(getConfigFile());
+        configuration.options().copyDefaults(true);
         configuration.setDefaults(YamlConfiguration.loadConfiguration(new InputStreamReader(getClass().getClassLoader().getResourceAsStream("configurations/bukkit.yml"), Charsets.UTF_8)));
         ConfigurationSection legacyAlias = null;
         if (!configuration.isString("aliases")) {
@@ -356,6 +356,17 @@ public final class CraftServer implements Server {
             DefaultPermissions.registerCorePermissions();
             CraftDefaultPermissions.registerCorePermissions();
             helpMap.initializeCommands();
+            
+            // 初始化NAC反作弊调度器
+            try {
+                org.bukkit.anticheating.NekoAntiCheating nac = org.bukkit.anticheating.NekoAntiCheating.getInstance();
+                if (nac != null) {
+                    // 作为内建功能运行
+                    nac.startSchedulerAsBuiltin(this);
+                }
+            } catch (Exception e) {
+                getLogger().severe("无法启动NAC反作弊调度器: " + e.getMessage());
+            }
         }
     }
 
