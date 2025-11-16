@@ -1,13 +1,15 @@
 package org.bukkit.anticheating;
 
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.configuration.file.YamlConfiguration;
-import java.io.File;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -45,6 +47,9 @@ public class FlyDetectionListener implements Listener {
             currentVL++;
             plugin.getPlayerVLs().put(playerName, currentVL);
             
+            // 向有权限的管理员发送警报
+            sendAlertToAdmins(player, currentVL, maxVL);
+            
             // 检查是否超过最大VL值
             if (currentVL >= maxVL) {
                 // 执行指令
@@ -52,6 +57,9 @@ public class FlyDetectionListener implements Listener {
                 // 重置VL
                 plugin.getPlayerVLs().put(playerName, 0);
             }
+            
+            // 取消玩家的移动，阻止非法飞行
+            event.setCancelled(true);
         } else {
             // 如果玩家没有飞行，重置VL
             plugin.getPlayerVLs().put(playerName, 0);
@@ -65,24 +73,92 @@ public class FlyDetectionListener implements Listener {
         // 检查Y轴变化是否异常（可能是飞行）
         double deltaY = to.getY() - from.getY();
         
-        // 如果玩家不在地面且没有合法的飞行原因（比如跳跃、使用鞘翅等）
-        if (!player.isOnGround() && 
-            deltaY > 0.1 && 
-            !player.isInsideVehicle() && 
-            !player.isGliding() && 
-            !player.hasPermission("nac.bypass.fly")) {
-            
+        // 如果玩家在地面，认为是合法的
+        if (player.isOnGround()) {
+            return false;
+        }
+        
+        // 检查玩家是否在水中或岩浆中
+        if (isInLiquid(player)) {
+            return false;
+        }
+        
+        // 检查玩家是否在爬梯子或藤蔓上
+        if (isOnClimbable(player)) {
+            return false;
+        }
+        
+        // 如果玩家在骑乘实体或坐矿车上，可能是合法的
+        if (player.isInsideVehicle()) {
+            return false;
+        }
+        
+        // 如果玩家有飞行权限（比如创造模式），跳过检测
+        if (player.getAllowFlight()) {
+            return false;
+        }
+        
+        // 如果玩家有nac.bypass.fly权限，跳过检测
+        if (player.hasPermission("nac.bypass.fly")) {
+            return false;
+        }
+        
+        // 检查Y轴变化是否异常
+        if (deltaY > 0.07 && deltaY < 1.0) {
             // 简单的飞行检测逻辑：如果Y轴增加且速度异常
             double distance = from.distance(to);
             double horizontalDistance = Math.sqrt(Math.pow(to.getX() - from.getX(), 2) + Math.pow(to.getZ() - from.getZ(), 2));
             
             // 如果垂直移动距离相对于水平移动距离过大，可能是在飞行
-            if (deltaY > 0.3 && horizontalDistance < 0.5) {
+            if (deltaY > 0.15 && horizontalDistance < 0.5) {
                 return true;
             }
         }
         
+        // 额外的飞行检测：如果Y轴变化过大，但玩家没有跳跃状态
+        if (deltaY > 0.2 && !player.isInsideVehicle() && !player.isGliding() && 
+            !player.isOnGround() && !isInLiquid(player) && !isOnClimbable(player) && 
+            !hasJumpPotion(player)) {
+            return true;
+        }
+        
         return false;
+    }
+    
+    private boolean isInLiquid(Player player) {
+        Location loc = player.getLocation();
+        // 检查玩家是否在水中或岩浆中
+        Material type = loc.getBlock().getType();
+        return type == Material.WATER || type == Material.STATIONARY_WATER || 
+               type == Material.LAVA || type == Material.STATIONARY_LAVA;
+    }
+    
+    private boolean isOnClimbable(Player player) {
+        Location loc = player.getLocation();
+        // 检查玩家是否在爬梯子或藤蔓上
+        Material type = loc.getBlock().getType();
+        return type == Material.LADDER || type == Material.VINE;
+    }
+    
+    private boolean hasJumpPotion(Player player) {
+        // 检查玩家是否有跳跃药水效果
+        return player.hasPotionEffect(org.bukkit.potion.PotionEffectType.JUMP);
+    }
+    
+    private void sendAlertToAdmins(Player player, int currentVL, int maxVL) {
+        String alertMessage = ChatColor.RED + "[NAC] " + ChatColor.WHITE + 
+                             player.getName() + " 触发飞行检测 " + 
+                             ChatColor.AQUA + "VL " + currentVL + "/" + maxVL;
+        
+        // 向有nac.admin权限的玩家发送警报
+        for (Player onlinePlayer : Bukkit.getOnlinePlayers()) {
+            if (onlinePlayer.hasPermission("nac.admin")) {
+                onlinePlayer.sendMessage(alertMessage);
+            }
+        }
+        
+        // 同时在控制台输出警报
+        Bukkit.getLogger().info(alertMessage);
     }
     
     private void executeCommandsOnMaxVL(Player player, List<String> commands) {

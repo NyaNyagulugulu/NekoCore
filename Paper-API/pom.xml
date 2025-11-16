@@ -108,8 +108,7 @@
             <artifactId>bungeecord-chat</artifactId>
             <version>1.12-SNAPSHOT</version>
             <type>jar</type>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/../libs/bungeecord-chat-1.12-20180712.114550-97.jar</systemPath>
+            <scope>compile</scope>
         </dependency>
 
         <!-- Paper - Add SLF4J -->

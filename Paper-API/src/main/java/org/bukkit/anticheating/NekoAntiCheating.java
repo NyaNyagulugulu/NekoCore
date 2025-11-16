@@ -68,14 +68,14 @@ public class NekoAntiCheating {
             logger.info("\n" +
                 "§4\n" +
                 "§c NekoCoreCiallo～(∠・ω< )⌒★私のおなにー見てください \n" +
-                "§6 NAC反作弊 已启用喵～ \n" +
+                "§6 NekoAntiCheating 已启用喵～ \n" +
                 "§e\n"
             );
         } else {
             logger.info("\n" +
                 "§8\n" +
                 "§7 NekoCoreCiallo～(∠・ω< )⌒★私のおなにー見てください \n" +
-                "§b NAC反作弊未在配置中启用喵～ \n" +
+                "§b NekoAntiCheating 已在配置中禁用喵～ \n" +
                 "§9\n"
             );
         }
@@ -103,7 +103,7 @@ public class NekoAntiCheating {
             CommandMap commandMap = (CommandMap) bukkitCommandMap.get(Bukkit.getServer());
             
             // 注册命令
-            commandMap.register("nac", new NacCommand("name"));
+            commandMap.register("nac", new NacCommand("nac"));
         } catch (Exception e) {
             logger.severe("无法注册NAC命令: " + e.getMessage());
         }
