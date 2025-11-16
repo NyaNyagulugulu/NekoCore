@@ -26,6 +26,8 @@ public class FlyDetectionListener {
     private final Map<String, Double> suspiciousValue = new HashMap<>(); // 可疑值
     private final Map<String, Location> lastLocation = new HashMap<>(); // 上一位置
     private final Map<String, Long> lastVLIncreaseTime = new HashMap<>(); // 最后VL增加时间
+    private final Map<String, Boolean> wasOnGroundLastTick = new HashMap<>(); // 上一tick是否在地面
+    private final Map<String, Integer> consecutiveJumps = new HashMap<>(); // 连续跳跃计数
     
     private int maxVL = 10;
     private int vlDecayIntervalSeconds = 30; // VL衰减间隔秒数
@@ -47,6 +49,10 @@ public class FlyDetectionListener {
             Location loc = player.getLocation();
             boolean onGround = player.isOnGround();
             Location lastLoc = lastLocation.get(playerName);
+            Boolean wasOnGround = wasOnGroundLastTick.get(playerName);
+            
+            // 更新地面状态
+            wasOnGroundLastTick.put(playerName, onGround);
             
             // 保存当前位置
             lastLocation.put(playerName, loc.clone());
@@ -64,6 +70,22 @@ public class FlyDetectionListener {
             Double lastYVel = lastVelY.get(playerName);
             if (lastYVel == null) lastYVel = 0.0;
             lastVelY.put(playerName, velY);
+            
+            // 检查是否为跳跃（从地面到空中）
+            if (wasOnGround != null && wasOnGround && !onGround && velY > 0.01) {
+                // 增加连续跳跃计数
+                int jumps = consecutiveJumps.getOrDefault(playerName, 0);
+                consecutiveJumps.put(playerName, jumps + 1);
+                
+                // 如果是正常跳跃，重置可疑值
+                if (isLegalJump(player, velY)) {
+                    suspiciousValue.put(playerName, 0.0);
+                }
+            } else if (onGround) {
+                // 如果在地面，重置连续跳跃计数和可疑值
+                consecutiveJumps.put(playerName, 0);
+                suspiciousValue.put(playerName, 0.0);
+            }
             
             // 更新空中tick数
             int currentAirTicks = airTicks.getOrDefault(playerName, 0);
@@ -96,29 +118,60 @@ public class FlyDetectionListener {
             // 4. 停空检测
             currentSuspicious += checkHovering(player, velY, currentAirTicks, onGround);
             
+            // 5. 连续跳跃检测（处理跳砍等正常行为）
+            currentSuspicious += checkConsecutiveJumps(player, onGround);
+            
             // 更新可疑值
             suspiciousValue.put(playerName, currentSuspicious);
             
-            // 如果可疑值超过阈值，增加VL
+            // 只有在可疑值较高且不是正常跳跃时才增加VL
             if (currentSuspicious >= 5.0) {
-                int vl = playerVLs.getOrDefault(playerName, 0) + 1;
-                playerVLs.put(playerName, vl);
-                lastVLIncreaseTime.put(playerName, System.currentTimeMillis());
-                
-                sendDetectionAlert(player, "飞行(" + String.format("%.2f", currentSuspicious) + ")", vl, maxVL);
-                
-                if (vl >= maxVL) {
-                    for (String cmd : punishCommands) {
-                        Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmd.replace("{player}", playerName));
+                // 检查是否为正常跳跃行为
+                boolean isNormalJump = false;
+                if (wasOnGround != null && wasOnGround && !onGround && velY > 0.01) {
+                    if (isLegalJump(player, velY)) {
+                        isNormalJump = true;
                     }
-                    playerVLs.put(playerName, 0);
-                    suspiciousValue.put(playerName, 0.0); // 重置可疑值
                 }
                 
-                // 重置可疑值防止连续触发
-                suspiciousValue.put(playerName, Math.max(0.0, currentSuspicious - 2.0));
+                // 只有不是正常跳跃时才增加VL
+                if (!isNormalJump) {
+                    int vl = playerVLs.getOrDefault(playerName, 0) + 1;
+                    playerVLs.put(playerName, vl);
+                    lastVLIncreaseTime.put(playerName, System.currentTimeMillis());
+                    
+                    sendDetectionAlert(player, "飞行(" + String.format("%.2f", currentSuspicious) + ")", vl, maxVL);
+                    
+                    if (vl >= maxVL) {
+                        for (String cmd : punishCommands) {
+                            Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmd.replace("{player}", playerName));
+                        }
+                        playerVLs.put(playerName, 0);
+                        suspiciousValue.put(playerName, 0.0); // 重置可疑值
+                    }
+                    
+                    // 降低可疑值防止连续触发
+                    suspiciousValue.put(playerName, Math.max(0.0, currentSuspicious - 3.0));
+                }
             }
         }
+    }
+
+    // 连续跳跃检测（区分正常跳砍和飞行）
+    private double checkConsecutiveJumps(Player player, boolean onGround) {
+        String playerName = player.getName();
+        int jumps = consecutiveJumps.getOrDefault(playerName, 0);
+        
+        // 正常玩家可能会有1-2次连续跳跃（如跳砍、移动跳跃等）
+        if (jumps > 2 && onGround) {
+            // 如果连续跳跃次数过多，但在地面，重置计数
+            consecutiveJumps.put(playerName, 0);
+        } else if (jumps > 5) {
+            // 如果连续跳跃次数过多（>5次），增加可疑值
+            return 0.5;
+        }
+        
+        return 0.0;
     }
 
     // VL衰减（请主线程定时调用）
@@ -152,11 +205,12 @@ public class FlyDetectionListener {
         if (onGround) return 0.0;
         
         // Minecraft自然重力: velY_new = velY_last - 0.08
+        // 但要考虑到可能有其他因素影响（如药水、方块等）
         double expectedVelY = lastYVel - 0.08;
         double diff = Math.abs(velY - expectedVelY);
         
-        // 如果差异过大，可能是飞行
-        if (diff > 0.05 && Math.abs(velY) < 0.01) {
+        // 如果差异过大，且Y速度接近0（悬停），可能是飞行
+        if (diff > 0.1 && Math.abs(velY) < 0.05) {
             return 1.0; // 异常重力，增加可疑值
         }
         
@@ -171,7 +225,17 @@ public class FlyDetectionListener {
         if (velY > 0.01) {
             // 检查是否为合法跳跃或其他特殊情况
             if (!isLegalJump(player, velY)) {
-                return 1.0; // 异常上升，增加可疑值
+                // 只有在明显异常的情况下才增加可疑值
+                // 对于较小的向上移动（如移动时轻微上跳），不增加可疑值
+                if (velY > 0.2) { // 明显异常上升才增加可疑值
+                    return 1.0;
+                } else {
+                    // 对于小幅度上升，可能是正常跳跃后的惯性，不增加可疑值
+                    return 0.0;
+                }
+            } else {
+                // 如果是合法跳跃，不增加可疑值
+                return 0.0;
             }
         }
         
@@ -183,7 +247,8 @@ public class FlyDetectionListener {
         if (onGround) return 0.0;
         
         // 空中水平速度正常范围：0.3 ~ 0.42 blocks/tick
-        if (horizontalSpeed > 0.45 || horizontalSpeed < 0.01) {
+        // 但在实际游戏中，玩家移动时可能会有正常的空中水平速度
+        if (horizontalSpeed > 0.5) { // 提高阈值，减少误判
             return 0.5; // 横向速度异常，增加可疑值
         }
         
@@ -194,8 +259,8 @@ public class FlyDetectionListener {
     private double checkHovering(Player player, double velY, int airTicks, boolean onGround) {
         if (onGround) return 0.0;
         
-        // 连续停空检测（推荐8~12 tick）
-        if (airTicks > 10 && Math.abs(velY) < 0.01) {
+        // 连续停空检测（推荐15~20 tick，给更多缓冲时间）
+        if (airTicks > 15 && Math.abs(velY) < 0.01) {
             return 1.0; // 停空，增加可疑值
         }
         
@@ -204,8 +269,8 @@ public class FlyDetectionListener {
 
     // 判断是否为合法跳跃
     private boolean isLegalJump(Player player, double velY) {
-        // 跳跃起跳速度约为0.42
-        if (velY > 0.4 && velY < 0.5) {
+        // 跳跃起跳速度约为0.42，但考虑到跳跃后可能还有其他动作，给一些缓冲
+        if (velY > 0.4 && velY <= 0.6) { // 扩大合法跳跃范围
             return true;
         }
         
@@ -213,7 +278,7 @@ public class FlyDetectionListener {
         if (player.hasPotionEffect(PotionEffectType.JUMP)) {
             int amplifier = player.getPotionEffect(PotionEffectType.JUMP).getAmplifier();
             double maxJumpVel = 0.42 + (amplifier + 1) * 0.1;
-            if (velY > 0.4 && velY <= maxJumpVel + 0.1) {
+            if (velY > 0.4 && velY <= maxJumpVel + 0.2) { // 扩大合法范围
                 return true;
             }
         }
