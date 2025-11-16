@@ -17,6 +17,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.io.Resources;
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.HashSet;
@@ -29,7 +30,6 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
 // Paper start
-import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import com.destroystokyo.paper.VersionHistoryManager;
 // Paper end
@@ -217,44 +217,16 @@ public class VersionCommand extends BukkitCommand {
         String version = Bukkit.getVersion();
         if (version == null) version = "Custom";
         if (version.startsWith("NekoCoreCiallo～(∠・ω< )⌒★私のおなにー見てください-")) {
-            String[] parts = version.substring("NekoCoreCiallo～(∠・ω< )⌒★私のおなにー見てください-".length()).split("[-\\s]");
-            int distance = getDistance(null, parts[0]);
-            switch (distance) {
-                case -1:
-                    // setVersionMessage("Error obtaining version information");
-                    setVersionMessage(""); // 移除错误信息
-                    break;
-                case 0:
-                    // setVersionMessage("You are running the latest version");
-                    setVersionMessage(""); // 移除版本信息
-                    break;
-                case -2:
-                    // setVersionMessage("Unknown version");
-                    setVersionMessage(""); // 移除未知版本信息
-                    break;
-                default:
-                    // setVersionMessage("You are " + distance + " version(s) behind");
-                    setVersionMessage(""); // 移除版本滞后信息
-            }
+            // 直接设置为空消息，不再检查版本
+            setVersionMessage("");
         } else if (version.startsWith("git-Bukkit-")) {
             // Paper end
             version = version.substring("git-Bukkit-".length());
-            int cbVersions = getDistance("craftbukkit", version.substring(0, version.indexOf(' ')));
-            if (cbVersions == -1) {
-                // setVersionMessage("Error obtaining version information");
-                setVersionMessage(""); // 移除错误信息
-            } else {
-                if (cbVersions == 0) {
-                    // setVersionMessage("You are running the latest version");
-                    setVersionMessage(""); // 移除版本信息
-                } else {
-                    // setVersionMessage("You are " + cbVersions + " version(s) behind");
-                    setVersionMessage(""); // 移除版本滞后信息
-                }
-            }
+            // 直接设置为空消息，不再检查版本
+            setVersionMessage("");
         } else {
-            // setVersionMessage("Unknown version, custom build?");
-            setVersionMessage(""); // 移除未知版本信息
+            // 直接设置为空消息，不再检查版本
+            setVersionMessage("");
         }
     }
 
@@ -278,65 +250,19 @@ public class VersionCommand extends BukkitCommand {
 
     // Paper start
     private static int getDistance(String repo, String verInfo) {
-        try {
-            int currentVer = Integer.decode(verInfo);
-            return getFromJenkins(currentVer);
-        } catch (NumberFormatException ex) {
-            verInfo = verInfo.replace("\"", "");
-            return getFromRepo("PaperMC/Paper", verInfo);
-        }
-
+        // 直接返回0，表示版本是最新的，避免访问外部服务器
+        return 0;
     }
 
     private static int getFromJenkins(int currentVer) {
-        try {
-            BufferedReader reader = Resources.asCharSource(
-                    new URL("https://ci.destroystokyo.com/job/Paper/lastSuccessfulBuild/buildNumber"), // Paper
-                    Charsets.UTF_8
-            ).openBufferedStream();
-            try {
-                int newVer = Integer.decode(reader.readLine());
-                return newVer - currentVer;
-            } catch (NumberFormatException ex) {
-                ex.printStackTrace();
-                return -2;
-            } finally {
-                reader.close();
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-            return -1;
-        }
+        // 直接返回0，表示版本是最新的，避免访问外部服务器
+        return 0;
     }
 
-    // Contributed by Techcable <Techcable@outlook.com> in GH PR #65
-    private static final String BRANCH = "ver/1.12.2";
+    private static final String BRANCH = "1.12.2";
+
     private static int getFromRepo(String repo, String hash) {
-        try {
-            HttpURLConnection connection = (HttpURLConnection) new URL("https://api.github.com/repos/" + repo + "/compare/" + BRANCH + "..." + hash).openConnection();
-            connection.connect();
-            if (connection.getResponseCode() == HttpURLConnection.HTTP_NOT_FOUND) return -2; // Unknown commit
-            try (
-                    BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream(), Charsets.UTF_8))
-            ) {
-                JSONObject obj = (JSONObject) new JSONParser().parse(reader);
-                String status = (String) obj.get("status");
-                switch (status) {
-                    case "identical":
-                        return 0;
-                    case "behind":
-                        return ((Number) obj.get("behind_by")).intValue();
-                    default:
-                        return -1;
-                }
-            } catch (ParseException | NumberFormatException e) {
-                e.printStackTrace();
-                return -1;
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-            return -1;
-        }
+        // 直接返回0，表示版本是最新的，避免访问外部服务器
+        return 0;
     }
-    // Paper end
 }

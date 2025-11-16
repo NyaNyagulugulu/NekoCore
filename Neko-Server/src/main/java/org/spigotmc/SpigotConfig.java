@@ -74,6 +74,9 @@ public class SpigotConfig
         version = getInt( "config-version", 11 );
         set( "config-version", 11 );
         readConfig( SpigotConfig.class, null );
+        
+        // 初始化反作弊系统
+        org.bukkit.anticheating.NekoAntiCheating.init();
     }
 
     public static void registerCommands()
@@ -192,7 +195,7 @@ public class SpigotConfig
     public static String unknownCommandMessage;
     public static String serverFullMessage;
     public static String outdatedClientMessage = "Outdated client! Please use {0}";
-    public static String outdatedServerMessage = "Outdated server! I\'m still on {0}";
+    public static String outdatedServerMessage = "Outdated server! I'm still on {0}";
     private static String transform(String s)
     {
         return ChatColor.translateAlternateColorCodes( '&', s ).replaceAll( "\\\\n", "\n" );

@@ -1,0 +1,13 @@
+# NekoAnti-cheating Configuration
+# 是否启用NAC反作弊
+enable-NAC: true
+
+# 飞行检测配置
+fly:
+  # VL最大值，达到后执行指令
+  max_vl: 10
+  # 达到最大VL后执行的指令（最多4条）
+  commands_on_max_vl:
+    - "kick {player} 飞你妈呢"
+  # VL值降低间隔（秒），每过这个时间VL值减少1点
+  vl_decay_interval_seconds: 30
