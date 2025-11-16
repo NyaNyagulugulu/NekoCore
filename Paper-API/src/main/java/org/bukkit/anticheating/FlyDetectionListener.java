@@ -51,6 +51,7 @@ public class FlyDetectionListener {
                     sendDetectionAlert(player, "飞行", vl, maxVL);
 
                     if (vl >= maxVL) {
+                        // 直接执行命令，不使用异步调度器
                         for (String cmd : punishCommands) {
                             Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmd.replace("{player}", playerName));
                         }
