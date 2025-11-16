@@ -235,20 +235,10 @@
                             </filters>
                             <!-- Paper end - Update Log4j -->
                             <relocations>
-                                <!-- Paper - Workaround for hardcoded path lookup in dependency, easier than forking it - GH-189 -->
-                                <!--<relocation>-->
-                                    <!--<pattern>joptsimple</pattern>-->
-                                    <!--<shadedPattern>org.bukkit.craftbukkit.libs.joptsimple</shadedPattern>-->
-                                <!--</relocation>-->
                                 <relocation>
                                     <pattern>jline</pattern>
                                     <shadedPattern>org.bukkit.craftbukkit.libs.jline</shadedPattern>
                                 </relocation>
-                                <!-- Paper - Don't relocate fastutil in order to prevent api breakage -->
-                                <!--<relocation>-->
-                                    <!--<pattern>it.unimi</pattern>-->
-                                    <!--<shadedPattern>org.bukkit.craftbukkit.libs.it.unimi</shadedPattern>-->
-                                <!--</relocation>-->
                                 <relocation>
                                     <pattern>org.bukkit.craftbukkit</pattern>
                                     <shadedPattern>org.bukkit.craftbukkit.v${minecraft_version}</shadedPattern>
