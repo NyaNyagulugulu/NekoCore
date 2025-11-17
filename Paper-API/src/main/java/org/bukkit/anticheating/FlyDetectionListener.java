@@ -242,14 +242,11 @@ public class FlyDetectionListener {
         return 0.0;
     }
 
-    // 横向速度异常检测
+    // 横向速度异常检测（现在由SpeedDetectionListener处理，此处仅保留基础检测以防止异常高速度）
     private double checkHorizontalSpeed(Player player, double horizontalSpeed, boolean onGround) {
-        if (onGround) return 0.0;
-        
-        // 空中水平速度正常范围：0.3 ~ 0.42 blocks/tick
-        // 但在实际游戏中，玩家移动时可能会有正常的空中水平速度
-        if (horizontalSpeed > 0.5) { // 提高阈值，减少误判
-            return 0.5; // 横向速度异常，增加可疑值
+        // 只检测极端异常速度（如完全不合理的情况）
+        if (horizontalSpeed > 1.0) { // 明显不合理的高速度
+            return 1.0; // 横向速度异常，增加可疑值
         }
         
         return 0.0;
