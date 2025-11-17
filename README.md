@@ -18,6 +18,7 @@ NekoCore 内嵌入了先进的 NAC (NekoAntiCheat) 反作弊系统，提供全�
 ### 功能特点
 
 - **高性能飞行检测**：基于服务器物理状态、连续位置变化、玩家动作和方块状态进行检测
+- **智能速度检测**：检测玩家异常移动速度，考虑药水效果和环境因素
 - **智能误判防护**：自动识别正常跳跃、跳砍、移动跳跃等行为，避免误判
 - **多维度检测**：重力一致性、空中上升、横向速度、停空等多维度检测
 - **可配置性**：支持通过配置文件调整检测参数和惩罚方式
@@ -30,6 +31,7 @@ NekoCore 内嵌入了先进的 NAC (NekoAntiCheat) 反作弊系统，提供全�
 3. **横向速度检测**：检测空中不合理的水平速度
 4. **停空检测**：识别悬停行为，允许正常跳跃和移动
 5. **连续跳跃检测**：区分正常跳砍和飞行作弊
+6. **速度异常检测**：检测地面和空中异常移动速度，考虑药水效果和环境因素
 
 ### 指令
 
@@ -41,7 +43,8 @@ NekoCore 内嵌入了先进的 NAC (NekoAntiCheat) 反作弊系统，提供全�
 ### 配置文件 (NAC.yml)
 
 ```yaml
-# NAC反作弊配置
+# NekoAnti-cheating Configuration
+# 是否启用NAC反作弊
 enable-NAC: true
 
 # 飞行检测配置
@@ -49,20 +52,29 @@ fly:
   # VL最大值，达到后执行指令
   max_vl: 10
   # 达到最大VL后执行的指令（最多4条）
+  # 可用的占位符: {player} - 玩家名
   commands_on_max_vl:
-    - "kick {player} 飞你妈呢"
+    - "ban {player} 飞你妈呢 30m"
   # VL值降低间隔（秒），每过这个时间VL值减少1点
   vl_decay_interval_seconds: 30
   # 权限说明:
   # nac.bypass.fly - 跳过飞行检测
   # nac.admin - 接收飞行检测警报
+
+# 速度检测配置
+speed:
+  max_vl: 10
+  commands_on_max_vl:
+    - "warn {player} 速度异常 10m"
+  vl_decay_interval_seconds: 30
 ```
 
 ### 权限节点
 
 - `nac.command` - 使用 NAC 命令
 - `nac.bypass.fly` - 跳过飞行检测
-- `nac.admin` - 接收飞行检测警报
+- `nac.bypass.speed` - 跳过速度检测
+- `nac.admin` - 接收飞行检测和速度检测警报
 
 ### 性能优化
 

@@ -93,29 +93,55 @@ public class SpeedDetectionListener {
         }
     }
 
-    // 速度异常检测
-    private double checkSpeed(Player player, double horizontalSpeed, boolean onGround) {
-        if (onGround) {
-            // 地面速度检测
-            double maxExpectedSpeed = calculateMaxGroundSpeed(player);
-            if (horizontalSpeed > maxExpectedSpeed * 1.3) { // 允许30%的误差
-                return 1.0; // 地面速度异常，增加可疑值
-            }
-        } else {
-            // 空中速度检测
-            double maxExpectedSpeed = calculateMaxAirSpeed(player);
-            if (horizontalSpeed > maxExpectedSpeed * 1.3) { // 允许30%的误差
-                return 1.0; // 空中速度异常，增加可疑值
-            }
-        }
-        
-        return 0.0;
+    // 速度异常检测
+    private double checkSpeed(Player player, double horizontalSpeed, boolean onGround) {
+        double maxExpectedSpeed;
+        double speedRatio;
+        Boolean wasOnGroundLastTick = this.wasOnGroundLastTick.get(player.getName());
+        boolean wasOnGround = wasOnGroundLastTick != null ? wasOnGroundLastTick : true;
+        
+        if (onGround) {
+            // 地面速度检测
+            maxExpectedSpeed = calculateMaxGroundSpeed(player);
+            speedRatio = horizontalSpeed / maxExpectedSpeed;
+            
+            // 对于地面移动，需要考虑刚从空中落地的情况
+            // 如果之前在空中，刚落地时的速度可能会短暂超出正常范围
+            if (!wasOnGround) {
+                // 如果刚从空中落地，稍微放宽阈值
+                if (speedRatio > 2.2) {
+                    return 0.5; // 地面速度异常，增加可疑值
+                }
+            } else {
+                // 在地面持续移动时的检测
+                if (speedRatio > 1.8) { // 提高到80%的误差，允许更多正常行为
+                    return 0.8; // 地面速度异常，增加可疑值
+                }
+            }
+        } else {
+            // 空中速度检测
+            maxExpectedSpeed = calculateMaxAirSpeed(player);
+            speedRatio = horizontalSpeed / maxExpectedSpeed;
+            
+            // 空中移动允许更高的误差范围，因为跳跃等行为可能影响速度
+            // 特别注意：按空格跳跃时可能有额外的移动行为
+            if (speedRatio > 2.2) { // 空中允许120%的误差
+                return 0.8; // 空中速度异常，增加可疑值
+            }
+        }
+        
+        return 0.0;
     }
     
     // 计算最大地面速度（考虑效果加成）
     private double calculateMaxGroundSpeed(Player player) {
         // 基础地面速度
         double baseSpeed = 0.28; // 基础行走速度
+        
+        // 检查是否在疾跑
+        if (player.isSprinting()) {
+            baseSpeed *= 1.3; // 疾跑速度增加30%
+        }
         
         // 检查速度效果
         if (player.hasPotionEffect(PotionEffectType.SPEED)) {
@@ -141,6 +167,12 @@ public class SpeedDetectionListener {
             baseSpeed *= 0.5; // 岩浆上速度减少50%
         }
         
+        // 检查是否在冰上（会增加滑行速度）
+        Material below = player.getLocation().clone().subtract(0, 0.1, 0).getBlock().getType();
+        if (below == Material.ICE || below == Material.PACKED_ICE) {
+            baseSpeed *= 1.2; // 冰上速度增加20%
+        }
+        
         return baseSpeed;
     }
     
@@ -148,6 +180,11 @@ public class SpeedDetectionListener {
     private double calculateMaxAirSpeed(Player player) {
         // 基础空中速度
         double baseSpeed = 0.28; // 基础空中移动速度
+        
+        // 检查是否在疾跑（虽然空中不能疾跑，但可能有惯性）
+        if (player.isSprinting()) {
+            baseSpeed *= 1.1; // 空中惯性增加10%
+        }
         
         // 检查速度效果
         if (player.hasPotionEffect(PotionEffectType.SPEED)) {

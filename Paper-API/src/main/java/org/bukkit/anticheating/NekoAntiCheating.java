@@ -60,21 +60,21 @@ public class NekoAntiCheating {
         logger.info("[NAC] 速度检测模块已加载");
     }
 
-    private void createDefaultConfig() {
-        YamlConfiguration defaultConfig = new YamlConfiguration();
-        defaultConfig.set("enable-NAC", true);
-        defaultConfig.set("fly.max_vl", 10);
-        defaultConfig.set("fly.commands_on_max_vl", new String[]{"kick {player} 飞你妈呢"});
-        defaultConfig.set("fly.vl_decay_interval_seconds", 30);
-        defaultConfig.set("speed.max_vl", 10);
-        defaultConfig.set("speed.commands_on_max_vl", new String[]{"kick {player} 速度作弊"});
-        defaultConfig.set("speed.vl_decay_interval_seconds", 30);
-
-        try {
-            defaultConfig.save(configFile);
-        } catch (IOException e) {
-            logger.severe("无法创建默认配置文件: " + e.getMessage());
-        }
+    private void createDefaultConfig() {
+        YamlConfiguration defaultConfig = new YamlConfiguration();
+        defaultConfig.set("enable-NAC", true);
+        defaultConfig.set("fly.max_vl", 10);
+        defaultConfig.set("fly.commands_on_max_vl", new String[]{"ban {player} 飞你妈呢 30m"});
+        defaultConfig.set("fly.vl_decay_interval_seconds", 30);
+        defaultConfig.set("speed.max_vl", 10);
+        defaultConfig.set("speed.commands_on_max_vl", new String[]{"warn {player} 速度异常 10m"});
+        defaultConfig.set("speed.vl_decay_interval_seconds", 30);
+
+        try {
+            defaultConfig.save(configFile);
+        } catch (IOException e) {
+            logger.severe("无法创建默认配置文件: " + e.getMessage());
+        }
     }
 
     public static NekoAntiCheating getInstance() { return instance; }
