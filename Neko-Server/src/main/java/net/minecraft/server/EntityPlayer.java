@@ -68,6 +68,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
     private int containerCounter;
     public boolean f;
     public int ping;
+    public long highPingStartTime = -1; // 记录高延迟开始时间
     public boolean viewingCredits;
     // Paper start - Player view distance API
     private int viewDistance = -1;

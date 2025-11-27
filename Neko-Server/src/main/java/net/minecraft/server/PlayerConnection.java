@@ -2273,6 +2273,25 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
 
             this.player.ping = (this.player.ping * 3 + i) / 4;
             this.g = false;
+            
+            // Check if player's ping is above the threshold (150ms)
+            if (this.player.ping > 150) {
+                // If this is the first time detecting high ping, record the start time
+                if (this.player.highPingStartTime == -1) {
+                    this.player.highPingStartTime = System.currentTimeMillis();
+                } 
+                // If high latency has persisted for more than 5 seconds (5000 milliseconds), kick the player
+                else if (System.currentTimeMillis() - this.player.highPingStartTime > 5000) {
+                    // Kick player with a message about high ping and include ping data
+                    ChatMessage kickMessage = new ChatMessage("你的延迟过高 (" + this.player.ping + "ms)。请关闭fack ping或者开启加速器", new Object[0]);
+                    minecraftServer.postToMainThread(() -> {
+                        this.disconnect(kickMessage);
+                    });
+                }
+            } else {
+                // If current ping is below 150ms, reset the high latency start time
+                this.player.highPingStartTime = -1;
+            }
         } else if (!this.player.getName().equals(this.minecraftServer.Q())) {
             // Paper start - This needs to be handled on the main thread for plugins
             PlayerConnection.LOGGER.warn("{} sent an invalid keepalive! pending keepalive: {} got id: {} expected id: {}",
@@ -2282,7 +2301,6 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
             });
             // Paper end
         }
-
     }
 
     private long getCurrentMillis() { return d(); } // Paper - OBFHELPER
