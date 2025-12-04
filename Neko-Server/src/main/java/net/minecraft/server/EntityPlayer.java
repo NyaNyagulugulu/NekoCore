@@ -41,6 +41,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
     public double d;
     public double e;
     public final Deque<Integer> removeQueue = new ArrayDeque<>(); // Paper
+    
     private final AdvancementDataPlayer bY;
     private final ServerStatisticManager bZ;
     private float ca = Float.MIN_VALUE;
@@ -106,8 +107,8 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
         BlockPosition blockposition = getSpawnPoint(minecraftserver, worldserver);
 
         this.server = minecraftserver;
+        this.bY = new AdvancementDataPlayer();
         this.bZ = minecraftserver.getPlayerList().getStatisticManager(this);
-        this.bY = minecraftserver.getPlayerList().h(this);
         this.P = 1.0F;
         this.setPositionRotation(blockposition, 0.0F, 0.0F);
         // CraftBukkit end
@@ -336,8 +337,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
             CriterionTriggers.t.a(this, this.cs, this.ticksLived - this.ct);
         }
 
-        this.bY.b(this);
-    }
+        }
 
     public void playerTick() {
         try {

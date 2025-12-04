@@ -38,7 +38,6 @@ import org.bukkit.scoreboard.ScoreboardManager;
 import org.bukkit.util.CachedServerIcon;
 
 import com.google.common.collect.ImmutableList;
-import org.bukkit.advancement.Advancement;
 import org.bukkit.generator.ChunkGenerator;
 
 import org.bukkit.inventory.ItemFactory;
@@ -1169,25 +1168,7 @@ public final class Bukkit {
     }
     // Paper end
 
-    /**
-     * Get the advancement specified by this key.
-     *
-     * @param key unique advancement key
-     * @return advancement or null if not exists
-     */
-    public static Advancement getAdvancement(NamespacedKey key) {
-        return server.getAdvancement(key);
-    }
-
-    /**
-     * Get an iterator through all advancements. Advancements cannot be removed
-     * from this iterator,
-     *
-     * @return an advancement iterator
-     */
-    public static Iterator<Advancement> advancementIterator() {
-        return server.advancementIterator();
-    }
+    
 
     /**
      * @see UnsafeValues

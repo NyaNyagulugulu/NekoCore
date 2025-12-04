@@ -1648,9 +1648,7 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IAs
         return worldserver != null ? worldserver.getGameRules().c("spawnRadius") : 10;
     }
 
-    public AdvancementDataWorld getAdvancementData() {
-        return this.worlds.get(0).z(); // CraftBukkit
-    }
+    
 
     public CustomFunctionData aL() {
         return this.worlds.get(0).A(); // CraftBukkit
@@ -1660,7 +1658,7 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IAs
         if (this.isMainThread()) {
             this.getPlayerList().savePlayers();
             this.worlds.get(0).getLootTableRegistry().reload(); // CraftBukkit
-            this.getAdvancementData().reload();
+            
             this.aL().f();
             this.getPlayerList().reload();
         } else {

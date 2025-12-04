@@ -53,8 +53,7 @@ import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.CraftSound;
 import org.bukkit.craftbukkit.CraftStatistic;
 import org.bukkit.craftbukkit.CraftWorld;
-import org.bukkit.craftbukkit.advancement.CraftAdvancement;
-import org.bukkit.craftbukkit.advancement.CraftAdvancementProgress;
+
 import org.bukkit.craftbukkit.map.CraftMapView;
 import org.bukkit.craftbukkit.map.RenderData;
 import org.bukkit.craftbukkit.scoreboard.CraftScoreboard;
@@ -1733,17 +1732,6 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
         PacketPlayOutWorldParticles packetplayoutworldparticles = new PacketPlayOutWorldParticles(CraftParticle.toNMS(particle), true, (float) x, (float) y, (float) z, (float) offsetX, (float) offsetY, (float) offsetZ, (float) extra, count, CraftParticle.toData(particle, data));
         getHandle().playerConnection.sendPacket(packetplayoutworldparticles);
 
-    }
-
-    @Override
-    public org.bukkit.advancement.AdvancementProgress getAdvancementProgress(org.bukkit.advancement.Advancement advancement) {
-        Preconditions.checkArgument(advancement != null, "advancement");
-
-        CraftAdvancement craft = (CraftAdvancement) advancement;
-        AdvancementDataPlayer data = getHandle().getAdvancementData();
-        AdvancementProgress progress = data.getProgress(craft.getHandle());
-
-        return new CraftAdvancementProgress(craft, data, progress);
     }
 
     @Override

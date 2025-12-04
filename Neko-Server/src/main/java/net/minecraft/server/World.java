@@ -99,8 +99,9 @@ public abstract class World implements IBlockAccess {
     public PersistentCollection worldMaps;
     protected PersistentVillage villages;
     protected LootTableRegistry B;
-    protected AdvancementDataWorld C;
+    protected Object C; // Placeholder for removed advancement functionality
     protected CustomFunctionData D;
+
     public final MethodProfiler methodProfiler;
     private final Calendar N;
     public Scoreboard scoreboard;
@@ -2617,44 +2618,44 @@ public abstract class World implements IBlockAccess {
         return this.getEntities(entity, axisalignedbb, IEntitySelector.e);
     }
 
-    // 线程本地缓存，用于减少getEntities方法中的临时对象创建
+    // 线程本地缓存，用于减少getEntities方法中的临时对象创建
     private static final ThreadLocal<List<Entity>> entityListCache = ThreadLocal.withInitial(() -> new ArrayList<>(16)); // 预设容量以减少扩容操作
 
-    public List<Entity> getEntities(@Nullable Entity entity, AxisAlignedBB axisalignedbb, @Nullable Predicate<? super Entity> predicate) {
-        List<Entity> list = entityListCache.get();
-        list.clear(); // 重用列表，减少垃圾回收
-        
-        // 优化：预计算区块边界以减少重复计算
-        final double minX = axisalignedbb.a - 2.0D;
-        final double maxX = axisalignedbb.d + 2.0D;
-        final double minZ = axisalignedbb.c - 2.0D;
-        final double maxZ = axisalignedbb.f + 2.0D;
-        
-        int i = MathHelper.floor(minX / 16.0D);
-        int j = MathHelper.floor(maxX / 16.0D);
-        int k = MathHelper.floor(minZ / 16.0D);
-        int l = MathHelper.floor(maxZ / 16.0D);
-
-        // 优化：提前检查边界有效性
-        if (i > j || k > l) {
-            return new ArrayList<>(0); // 返回空列表而不是遍历无效范围
-        }
-
-        for (int i1 = i; i1 <= j; ++i1) {
-            for (int j1 = k; j1 <= l; ++j1) {
-                if (this.isChunkLoaded(i1, j1, true)) {
-                    this.getChunkAt(i1, j1).a(entity, axisalignedbb, list, predicate);
-                }
-            }
-        }
-
-        // 优化：如果列表为空，直接返回空列表而不是创建新的ArrayList
-        if (list.isEmpty()) {
-            return new ArrayList<>(0);
-        }
-        
-        // 创建一个固定大小的列表返回，避免外部修改缓存
-        return new ArrayList<>(list);
+    public List<Entity> getEntities(@Nullable Entity entity, AxisAlignedBB axisalignedbb, @Nullable Predicate<? super Entity> predicate) {
+        List<Entity> list = entityListCache.get();
+        list.clear(); // 重用列表，减少垃圾回收
+        
+        // 优化：预计算区块边界以减少重复计算
+        final double minX = axisalignedbb.a - 2.0D;
+        final double maxX = axisalignedbb.d + 2.0D;
+        final double minZ = axisalignedbb.c - 2.0D;
+        final double maxZ = axisalignedbb.f + 2.0D;
+        
+        int i = MathHelper.floor(minX / 16.0D);
+        int j = MathHelper.floor(maxX / 16.0D);
+        int k = MathHelper.floor(minZ / 16.0D);
+        int l = MathHelper.floor(maxZ / 16.0D);
+
+        // 优化：提前检查边界有效性
+        if (i > j || k > l) {
+            return new ArrayList<>(0); // 返回空列表而不是遍历无效范围
+        }
+
+        for (int i1 = i; i1 <= j; ++i1) {
+            for (int j1 = k; j1 <= l; ++j1) {
+                if (this.isChunkLoaded(i1, j1, true)) {
+                    this.getChunkAt(i1, j1).a(entity, axisalignedbb, list, predicate);
+                }
+            }
+        }
+
+        // 优化：如果列表为空，直接返回空列表而不是创建新的ArrayList
+        if (list.isEmpty()) {
+            return new ArrayList<>(0);
+        }
+        
+        // 创建一个固定大小的列表返回，避免外部修改缓存
+        return new ArrayList<>(list);
     }
 
     public <T extends Entity> List<T> a(Class<? extends T> oclass, Predicate<? super T> predicate) {

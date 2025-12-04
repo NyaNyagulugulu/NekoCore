@@ -398,10 +398,5 @@ public class SpigotConfig
         itemDirtyTicks = getInt("settings.item-dirty-ticks", 20);
     }
 
-    public static boolean disableAdvancementSaving;
-    public static List<String> disabledAdvancements;
-    private static void disabledAdvancements() {
-        disableAdvancementSaving = getBoolean("advancements.disable-saving", false);
-        disabledAdvancements = getList("advancements.disabled", Arrays.asList(new String[]{"minecraft:story/disabled"}));
-    }
+    
 }

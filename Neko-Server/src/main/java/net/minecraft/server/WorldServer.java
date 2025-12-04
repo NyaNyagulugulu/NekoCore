@@ -108,17 +108,10 @@ public class WorldServer extends World implements IAsyncTaskHandler {
         // CraftBukkit end
 
         this.B = new LootTableRegistry(new File(new File(this.dataManager.getDirectory(), "data"), "loot_tables"));
-        // CraftBukkit start
-        if (this.dimension != 0) { // SPIGOT-3899 multiple worlds of advancements not supported
-            this.C = this.server.getAdvancementData();
-        }
-        if (this.C == null) {
-            this.C = new AdvancementDataWorld(new File(new File(this.dataManager.getDirectory(), "data"), "advancements"));
-        }
+                // CraftBukkit start
         if (this.D == null) {
             this.D = new CustomFunctionData(new File(new File(this.dataManager.getDirectory(), "data"), "functions"), this.server);
         }
-        // CraftBukkit end
         this.getWorldBorder().setCenter(this.worldData.B(), this.worldData.C());
         this.getWorldBorder().setDamageAmount(this.worldData.H());
         this.getWorldBorder().setDamageBuffer(this.worldData.G());
@@ -1490,9 +1483,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {
         return this.getChunkProviderServer().a(this, s, blockposition, flag);
     }
 
-    public AdvancementDataWorld z() {
-        return this.C;
-    }
+    
 
     public CustomFunctionData A() {
         return this.D;
@@ -1500,6 +1491,33 @@ public class WorldServer extends World implements IAsyncTaskHandler {
 
     public IChunkProvider getChunkProvider() {
         return this.getChunkProviderServer();
+    }
+
+    // Redstone power calculation method (overriding World class method)
+    public int z(BlockPosition blockposition) {
+        int i = 0;
+        EnumDirection[] aenumdirection = EnumDirection.values();
+        int j = aenumdirection.length;
+
+        for (int k = 0; k < j; ++k) {
+            EnumDirection enumdirection = aenumdirection[k];
+            int l = this.getBlockFacePower(blockposition.shift(enumdirection), enumdirection);
+
+            if (l >= 15) {
+                return 15;
+            }
+
+            if (l > i) {
+                i = l;
+            }
+        }
+
+        return i;
+    }
+
+    // Placeholder method for removed advancement functionality (was returning AdvancementDataWorld)
+    public Object z() {
+        return null;
     }
 
     static class BlockActionDataList extends ArrayList<BlockActionData> {

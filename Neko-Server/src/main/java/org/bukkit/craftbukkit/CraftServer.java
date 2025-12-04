@@ -174,7 +174,7 @@ public final class CraftServer implements Server {
     private boolean printSaveWarning;
     private CraftIconCache icon;
     private boolean overrideAllCommandBlockCommands = false;
-    private boolean unrestrictedAdvancements;
+    
     private boolean unrestrictedSignCommands; // Paper
     private final List<CraftPlayer> playerView;
     public int reloadCount;
@@ -216,8 +216,8 @@ public final class CraftServer implements Server {
             getLogger().info("Console input is disabled due to --noconsole command argument");
         }
 
-        configuration = YamlConfiguration.loadConfiguration(getConfigFile());
-        configuration.options().copyDefaults(true);
+        configuration = YamlConfiguration.loadConfiguration(getConfigFile());
+        configuration.options().copyDefaults(true);
         configuration.setDefaults(YamlConfiguration.loadConfiguration(new InputStreamReader(getClass().getClassLoader().getResourceAsStream("configurations/bukkit.yml"), Charsets.UTF_8)));
         ConfigurationSection legacyAlias = null;
         if (!configuration.isString("aliases")) {
@@ -253,7 +253,7 @@ public final class CraftServer implements Server {
 
         saveCommandsConfig();
         overrideAllCommandBlockCommands = commandsConfiguration.getStringList("command-block-overrides").contains("*");
-        unrestrictedAdvancements = commandsConfiguration.getBoolean("unrestricted-advancements");
+        
         // Paper start
         unrestrictedSignCommands = commandsConfiguration.getBoolean("unrestricted-signs");
         if (unrestrictedSignCommands) {
@@ -278,7 +278,7 @@ public final class CraftServer implements Server {
         }
 
         if (unrestrictedSignCommands && listener instanceof TileEntitySign.ISignCommandListener) return true; // Paper
-        return unrestrictedAdvancements && listener instanceof AdvancementRewards.AdvancementCommandListener;
+        return false;
     }
 
     public boolean getCommandBlockOverride(String command) {
@@ -1817,24 +1817,6 @@ public final class CraftServer implements Server {
         Validate.notNull(uuid, "UUID cannot be null");
         net.minecraft.server.Entity entity = console.a(uuid); // PAIL: getEntity
         return entity == null ? null : entity.getBukkitEntity();
-    }
-
-    @Override
-    public org.bukkit.advancement.Advancement getAdvancement(NamespacedKey key) {
-        Preconditions.checkArgument(key != null, "key");
-
-        Advancement advancement = console.getAdvancementData().a(CraftNamespacedKey.toMinecraft(key));
-        return (advancement == null) ? null : advancement.bukkit;
-    }
-
-    @Override
-    public Iterator<org.bukkit.advancement.Advancement> advancementIterator() {
-        return Iterators.unmodifiableIterator(Iterators.transform(console.getAdvancementData().c().iterator(), new Function<Advancement, org.bukkit.advancement.Advancement>() { // PAIL: rename
-            @Override
-            public org.bukkit.advancement.Advancement apply(Advancement advancement) {
-                return advancement.bukkit;
-            }
-        }));
     }
 
     @Deprecated

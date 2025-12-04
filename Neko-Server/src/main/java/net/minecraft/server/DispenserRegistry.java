@@ -693,10 +693,7 @@ public class DispenserRegistry {
 
             StatisticList.a();
             if (DispenserRegistry.d.isDebugEnabled()) {
-                if ((new AdvancementDataWorld((File) null)).b()) {
-                    DispenserRegistry.b = true;
-                    DispenserRegistry.d.error("Errors with built-in advancements!");
-                }
+                
 
                 if (!LootTables.b()) {
                     DispenserRegistry.b = true;

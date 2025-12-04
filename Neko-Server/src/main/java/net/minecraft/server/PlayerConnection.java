@@ -497,18 +497,7 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
 
     }
 
-    public void a(PacketPlayInAdvancements packetplayinadvancements) {
-        PlayerConnectionUtils.ensureMainThread(packetplayinadvancements, this, this.player.x());
-        if (packetplayinadvancements.b() == PacketPlayInAdvancements.Status.OPENED_TAB) {
-            MinecraftKey minecraftkey = packetplayinadvancements.c();
-            Advancement advancement = this.minecraftServer.getAdvancementData().a(minecraftkey);
-
-            if (advancement != null) {
-                this.player.getAdvancementData().a(advancement);
-            }
-        }
-
-    }
+    
 
     public void a(PacketPlayInFlying packetplayinflying) {
         PlayerConnectionUtils.ensureMainThread(packetplayinflying, this, this.player.x());
@@ -2791,5 +2780,10 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
     // CraftBukkit start - Add "isDisconnected" method
     public final boolean isDisconnected() {
         return (!this.player.joining && !this.networkManager.isConnected()) || this.processedDisconnect; // Paper
+    }
+
+    // Placeholder method for removed advancement functionality
+    public void a(PacketPlayInAdvancements packetplayinadvancements) {
+        // Do nothing - advancements have been removed
     }
 }

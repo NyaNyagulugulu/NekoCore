@@ -48,7 +48,6 @@ public class SecondaryWorldServer extends WorldServer {
         this.worldMaps = this.a.Z();
         this.scoreboard = this.a.getScoreboard();
         this.B = this.a.getLootTableRegistry();
-        this.C = this.a.z();
         String s = PersistentVillage.a(this.worldProvider);
         PersistentVillage persistentvillage = (PersistentVillage) this.worldMaps.get(PersistentVillage.class, s);
 

@@ -41,7 +41,7 @@ settings:
 
   # 钟摆相关的优化设置
   # Pendulum related optimization settings
-  disable-advancement-saving: false  # 除非特别需要，否则一般不推荐禁用
+  disable-advancement-saving: true  # 除非特别需要，否则一般不推荐禁用
   disable-item-saving: false
 
   # 书本大小限制

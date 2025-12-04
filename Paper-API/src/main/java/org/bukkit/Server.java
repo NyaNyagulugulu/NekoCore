@@ -39,7 +39,6 @@ import org.bukkit.scoreboard.ScoreboardManager;
 import org.bukkit.util.CachedServerIcon;
 
 import com.google.common.collect.ImmutableList;
-import org.bukkit.advancement.Advancement;
 import org.bukkit.generator.ChunkGenerator;
 
 import org.bukkit.inventory.ItemFactory;
@@ -968,21 +967,7 @@ public interface Server extends PluginMessageRecipient {
      */
     CommandMap getCommandMap();
 
-    /**
-     * Get the advancement specified by this key.
-     *
-     * @param key unique advancement key
-     * @return advancement or null if not exists
-     */
-    Advancement getAdvancement(NamespacedKey key);
-
-    /**
-     * Get an iterator through all advancements. Advancements cannot be removed
-     * from this iterator,
-     *
-     * @return an advancement iterator
-     */
-    Iterator<Advancement> advancementIterator();
+    
 
     /**
      * @see UnsafeValues

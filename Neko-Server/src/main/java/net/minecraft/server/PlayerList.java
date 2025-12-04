@@ -350,12 +350,6 @@ public abstract class PlayerList {
             serverstatisticmanager.b();
         }
 
-        AdvancementDataPlayer advancementdataplayer = (AdvancementDataPlayer) entityplayer.getAdvancementData(); // CraftBukkit
-
-        if (advancementdataplayer != null) {
-            advancementdataplayer.c();
-        }
-
     }
 
     public void onPlayerJoin(EntityPlayer entityplayer, String joinMessage) { // CraftBukkit added param
@@ -464,7 +458,6 @@ public abstract class PlayerList {
 
         worldserver.kill(entityplayer);
         worldserver.getPlayerChunkMap().removePlayer(entityplayer);
-        entityplayer.getAdvancementData().a();
         this.players.remove(entityplayer);
         this.playersByName.remove(entityplayer.getName()); // Spigot
         UUID uuid = entityplayer.getUniqueID();
@@ -1482,21 +1475,7 @@ public abstract class PlayerList {
         return serverstatisticmanager;
     }
 
-    public AdvancementDataPlayer h(EntityPlayer entityplayer) {
-        UUID uuid = entityplayer.getUniqueID();
-        AdvancementDataPlayer advancementdataplayer = (AdvancementDataPlayer) entityplayer.getAdvancementData(); // CraftBukkit
-
-        if (advancementdataplayer == null) {
-            File file = new File(this.server.getWorldServer(0).getDataManager().getDirectory(), "advancements");
-            File file1 = new File(file, uuid + ".json");
-
-            advancementdataplayer = new AdvancementDataPlayer(this.server, file1, entityplayer);
-            // this.p.put(uuid, advancementdataplayer); // CraftBukkit
-        }
-
-        advancementdataplayer.a(entityplayer);
-        return advancementdataplayer;
-    }
+    
 
     public void a(int i) {
         this.s = i;
@@ -1541,8 +1520,6 @@ public abstract class PlayerList {
         }*/
 
         for (EntityPlayer player : players) {
-            player.getAdvancementData().b();
-            player.getAdvancementData().b(player); // CraftBukkit - trigger immediate flush of advancements
         }
         // CraftBukkit end
 

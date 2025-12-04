@@ -11,7 +11,7 @@
 # Bug跟踪器: http://www.spigotmc.org/go/bugs
 
 command-block-overrides: []
-unrestricted-advancements: false
+unrestricted-advancements: true
 aliases:
   icanhasbukkit:
     - "version $1-"
