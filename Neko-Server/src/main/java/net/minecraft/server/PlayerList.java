@@ -162,7 +162,7 @@ public abstract class PlayerList {
         playerconnection.sendPacket(new PacketPlayOutHeldItemSlot(entityplayer.inventory.itemInHandIndex));
         playerconnection.sendPacket(new PacketPlayOutEntityStatus(entityplayer, (byte) (worldserver.getGameRules().getBoolean("reducedDebugInfo") ? 22 : 23))); // Paper - fix this rule not being initialized on the client
         this.f(entityplayer);
-        entityplayer.getStatisticManager().c();
+        
         entityplayer.F().a(entityplayer);
         this.sendScoreboard((ScoreboardServer) worldserver.getScoreboard(), entityplayer);
         this.server.aD();
@@ -344,11 +344,7 @@ public abstract class PlayerList {
     protected void savePlayerFile(EntityPlayer entityplayer) {
         entityplayer.lastSave = MinecraftServer.currentTick; // Paper
         this.playerFileData.save(entityplayer);
-        ServerStatisticManager serverstatisticmanager = (ServerStatisticManager) entityplayer.getStatisticManager(); // CraftBukkit
-
-        if (serverstatisticmanager != null) {
-            serverstatisticmanager.b();
-        }
+        
 
     }
 
@@ -414,7 +410,7 @@ public abstract class PlayerList {
     public String disconnect(EntityPlayer entityplayer) { // CraftBukkit - return string
         WorldServer worldserver = entityplayer.x();
 
-        entityplayer.b(StatisticList.f);
+        // Statistic system removed
 
         // CraftBukkit start - Quitting must be before we do final save of data, in case plugins need to modify it
         org.bukkit.craftbukkit.event.CraftEventFactory.handleInventoryCloseEvent(entityplayer, org.bukkit.event.inventory.InventoryCloseEvent.Reason.DISCONNECT); // Paper
@@ -1450,29 +1446,8 @@ public abstract class PlayerList {
         this.sendMessage(ichatbasecomponent, true);
     }
 
-    public ServerStatisticManager getStatisticManager(EntityPlayer entityhuman) {
-        UUID uuid = entityhuman.getUniqueID();
-        ServerStatisticManager serverstatisticmanager = uuid == null ? null : (ServerStatisticManager) entityhuman.getStatisticManager();
-        // CraftBukkit end
-
-        if (serverstatisticmanager == null) {
-            File file = new File(this.server.getWorldServer(0).getDataManager().getDirectory(), "stats");
-            File file1 = new File(file, uuid + ".json");
-
-            if (!file1.exists()) {
-                File file2 = new File(file, entityhuman.getName() + ".json");
-
-                if (file2.exists() && file2.isFile()) {
-                    file2.renameTo(file1);
-                }
-            }
-
-            serverstatisticmanager = new ServerStatisticManager(this.server, file1);
-            serverstatisticmanager.a();
-            // this.o.put(uuid, serverstatisticmanager); // CraftBukkit
-        }
-
-        return serverstatisticmanager;
+    public Object getStatisticManager(EntityPlayer entityhuman) {
+        return null;
     }
 
     

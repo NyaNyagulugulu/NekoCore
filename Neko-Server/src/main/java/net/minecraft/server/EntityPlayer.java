@@ -43,7 +43,6 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
     public final Deque<Integer> removeQueue = new ArrayDeque<>(); // Paper
     
     private final AdvancementDataPlayer bY;
-    private final ServerStatisticManager bZ;
     private float ca = Float.MIN_VALUE;
     private int cb = Integer.MIN_VALUE;
     private int cc = Integer.MIN_VALUE;
@@ -108,7 +107,6 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
 
         this.server = minecraftserver;
         this.bY = new AdvancementDataPlayer();
-        this.bZ = minecraftserver.getPlayerList().getStatisticManager(this);
         this.P = 1.0F;
         this.setPositionRotation(blockposition, 0.0F, 0.0F);
         // CraftBukkit end
@@ -1030,32 +1028,12 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
 
     }
 
-    public void a(Statistic statistic, int i) {
-        if (statistic != null) {
-            this.bZ.b(this, statistic, i);
-            Iterator iterator = this.getScoreboard().getObjectivesForCriteria(statistic.f()).iterator();
-
-            while (iterator.hasNext()) {
-                ScoreboardObjective scoreboardobjective = (ScoreboardObjective) iterator.next();
-
-                this.getScoreboard().getPlayerScoreForObjective(this.getName(), scoreboardobjective).addScore(i);
-            }
-
-        }
+    public void a(Object statistic, int i) {
+        // Do nothing - statistics have been removed
     }
 
-    public void a(Statistic statistic) {
-        if (statistic != null) {
-            this.bZ.setStatistic(this, statistic, 0);
-            Iterator iterator = this.getScoreboard().getObjectivesForCriteria(statistic.f()).iterator();
-
-            while (iterator.hasNext()) {
-                ScoreboardObjective scoreboardobjective = (ScoreboardObjective) iterator.next();
-
-                this.getScoreboard().getPlayerScoreForObjective(this.getName(), scoreboardobjective).setScore(0);
-            }
-
-        }
+    public void a(Object statistic) {
+        // Do nothing - statistics have been removed
     }
 
     public void a(List<IRecipe> list) {
@@ -1337,8 +1315,8 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
         this.cn = MinecraftServer.aw();
     }
 
-    public ServerStatisticManager getStatisticManager() {
-        return this.bZ;
+    public Object getStatisticManager() {
+        return null;
     }
 
     public RecipeBookServer F() {

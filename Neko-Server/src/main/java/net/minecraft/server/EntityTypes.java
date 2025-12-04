@@ -286,8 +286,8 @@ public class EntityTypes {
             this.a = minecraftkey;
             this.b = i;
             this.c = j;
-            this.killEntityStatistic = StatisticList.a(this);
-            this.killedByEntityStatistic = StatisticList.b(this);
+            this.killEntityStatistic = null;
+            this.killedByEntityStatistic = null;
         }
     }
 }

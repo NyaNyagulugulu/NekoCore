@@ -20,7 +20,7 @@ public interface UnsafeValues {
 
     ItemStack modifyItemStack(ItemStack stack, String arguments);
 
-    Statistic getStatisticFromInternalName(String name);
+    Object getStatisticFromInternalName(String name);
 
     @Deprecated
     List<String> tabCompleteInternalStatisticOrAchievementName(String token, List<String> completions);

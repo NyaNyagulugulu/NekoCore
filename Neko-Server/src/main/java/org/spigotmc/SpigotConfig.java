@@ -266,11 +266,7 @@ public class SpigotConfig
         {
             if ( section.isInt( name ) )
             {
-                if ( StatisticList.getStatistic(name) == null )
-                {
-                    Bukkit.getLogger().log(Level.WARNING, "Ignoring non existent stats.forced-stats " + name);
-                    continue;
-                }
+                // Statistic system removed
                 forcedStats.put( name, section.getInt( name ) );
             }
         }

@@ -1759,7 +1759,7 @@ public class PlayerConnection implements PacketListenerPlayIn, ITickable {
             break;
 
         case REQUEST_STATS:
-            this.player.getStatisticManager().a(this.player);
+            
         }
 
     }
