@@ -1406,15 +1406,15 @@ public abstract class EntityHuman extends EntityLiving {
 
     public void b(List<IRecipe> list) {}
 
-    public void b(Object statistic) {
+    public void b(Statistic statistic) {
         // Do nothing - statistics have been removed
     }
 
-    public void a(Object statistic, int i) {
+    public void a(Statistic statistic, int i) {
         // Do nothing - statistics have been removed
     }
 
-    public void a(Object statistic) {
+    public void a(Statistic statistic) {
         // Do nothing - statistics have been removed
     }
 

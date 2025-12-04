@@ -5,84 +5,84 @@ import java.util.ArrayList;
 
 // Placeholder class for removed statistic functionality
 public class StatisticList {
-    public static final Object A = null;
-    public static final Object B = null;
-    public static final Object C = null;
-    public static final Object D = null;
-    public static final Object E = null;
-    public static final Object F = null;
-    public static final Object g = null;
-    public static final Object h = null;
-    public static final Object i = null;
-    public static final Object j = null;
-    public static final Object k = null;
-    public static final Object l = null;
-    public static final Object m = null;
-    public static final Object n = null;
-    public static final Object o = null;
-    public static final Object p = null;
-    public static final Object q = null;
-    public static final Object r = null;
-    public static final Object s = null;
-    public static final Object t = null;
-    public static final Object u = null;
-    public static final Object v = null;
-    public static final Object w = null;
-    public static final Object x = null;
-    public static final Object y = null;
-    public static final Object z = null;
-    public static final Object aa = null;
-    public static final Object ab = null;
-    public static final Object ac = null;
-    public static final Object X = null;
-    public static final Object Y = null;
-    public static final Object Z = null;
-    public static final Object O = null;
-    public static final Object Q = null;
-    public static final Object U = null;
-    public static final Object W = null;
-    public static final Object H = null;
-    public static final Object I = null;
-    public static final Object J = null;
-    public static final Object K = null;
-    public static final Object L = null;
-    public static final Object N = null;
+    public static final Statistic A = new Statistic("statNameA");
+    public static final Statistic B = new Statistic("statNameB");
+    public static final Statistic C = new Statistic("statNameC");
+    public static final Statistic D = new Statistic("statNameD");
+    public static final Statistic E = new Statistic("statNameE");
+    public static final Statistic F = new Statistic("statNameF");
+    public static final Statistic g = new Statistic("statNameG");
+    public static final Statistic h = new Statistic("statNameH");
+    public static final Statistic i = new Statistic("statNameI");
+    public static final Statistic j = new Statistic("statNameJ");
+    public static final Statistic k = new Statistic("statNameK");
+    public static final Statistic l = new Statistic("statNameL");
+    public static final Statistic m = new Statistic("statNameM");
+    public static final Statistic n = new Statistic("statNameN");
+    public static final Statistic o = new Statistic("statNameO");
+    public static final Statistic p = new Statistic("statNameP");
+    public static final Statistic q = new Statistic("statNameQ");
+    public static final Statistic r = new Statistic("statNameR");
+    public static final Statistic s = new Statistic("statNameS");
+    public static final Statistic t = new Statistic("statNameT");
+    public static final Statistic u = new Statistic("statNameU");
+    public static final Statistic v = new Statistic("statNameV");
+    public static final Statistic w = new Statistic("statNameW");
+    public static final Statistic x = new Statistic("statNameX");
+    public static final Statistic y = new Statistic("statNameY");
+    public static final Statistic z = new Statistic("statNameZ");
+    public static final Statistic aa = new Statistic("statNameAA");
+    public static final Statistic ab = new Statistic("statNameAB");
+    public static final Statistic ac = new Statistic("statNameAC");
+    public static final Statistic X = new Statistic("statNameX2");
+    public static final Statistic Y = new Statistic("statNameY2");
+    public static final Statistic Z = new Statistic("statNameZ");
+    public static final Statistic O = new Statistic("statNameO");
+    public static final Statistic Q = new Statistic("statNameQ");
+    public static final Statistic U = new Statistic("statNameU");
+    public static final Statistic W = new Statistic("statNameW");
+    public static final Statistic H = new Statistic("statNameH");
+    public static final Statistic I = new Statistic("statNameI");
+    public static final Statistic J = new Statistic("statNameJ");
+    public static final Statistic K = new Statistic("statNameK");
+    public static final Statistic L = new Statistic("statNameL");
+    public static final Statistic N = new Statistic("statNameN");
     
-    public static final List<Object> stats = new ArrayList<>();
+    public static final List<Statistic> stats = new ArrayList<>();
 
-    public static Object getStatistic(String name) {
+    public static Statistic getStatistic(String name) {
         return null;
     }
 
-    public static Object a(Block block) {
+    public static Statistic a(Block block) {
         return null;
     }
 
-    public static Object b(Item item) {
+    public static Statistic b(Item item) {
         return null;
     }
 
-    public static Object c(Item item) {
+    public static Statistic c(Item item) {
         return null;
     }
 
-    public static Object d(Item item) {
+    public static Statistic d(Item item) {
         return null;
     }
 
-    public static Object a(Item item) {
+    public static Statistic a(Item item) {
         return null;
     }
 
-    public static Object a(MinecraftKey key) {
+    public static Statistic a(MinecraftKey key) {
         return null;
     }
 
-    public static Object a(EntityTypes.MonsterEggInfo info) {
+    public static Statistic a(EntityTypes.MonsterEggInfo info) {
         return null;
     }
 
-    public static Object b(EntityTypes.MonsterEggInfo info) {
+    public static Statistic b(EntityTypes.MonsterEggInfo info) {
         return null;
     }
 
