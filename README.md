@@ -10,6 +10,43 @@ NekoCore 是一个高性能的 Minecraft 1.12.2 服务器核心，基于 Paper �
 - 回退到 1.8.8 战斗机制
 - 支持广泛的插件生态
 - 内嵌入式 NAC 反作弊系统
+- 移除了统计功能
+- 移除了成就功能
+
+## 已移除的功能
+
+### 统计系统 (Statistics System)
+- 已完全移除玩家统计功能（如方块破坏、物品制作、生物击杀等数据记录）
+- 相关 API 方法调用将输出"统计系统已被删除"警告
+- 不影响服务器正常运行
+
+### 成就系统 (Advancements System) 
+- 已完全移除进度/成就系统
+- 相关 API 方法调用将输出"成就系统已被删除"警告
+- 不影响服务器正常运行
+
+对应失效的NMS包括以下
+
+### 统计系统相关NMS类：
+- net.minecraft.server.Statistic
+- net.minecraft.server.StatisticList
+- net.minecraft.server.StatisticManager
+- net.minecraft.server.ServerStatisticManager
+- net.minecraft.server.EntityHuman.a(Statistic, int)
+- net.minecraft.server.EntityHuman.b(Statistic)
+- net.minecraft.server.EntityPlayer.b(Statistic)
+- net.minecraft.server.TileEntityBeacon.a(EntityHuman, int)
+- net.minecraft.server.BlockCauldron
+
+### 成就系统相关NMS类：
+- net.minecraft.server.Advancement
+- net.minecraft.server.AdvancementDataPlayer
+- net.minecraft.server.AdvancementDataWorld
+- net.minecraft.server.AdvancementRewards
+- net.minecraft.server.Advancements
+- net.minecraft.server.PacketPlayOutAdvancements
+- net.minecraft.server.PacketPlayInAdvancements
+- net.minecraft.server.CommandAdvancement
 
 ## NAC 反作弊系统
 
