@@ -27,7 +27,6 @@ import net.minecraft.server.MojangsonParser;
 import net.minecraft.server.NBTTagCompound;
 import net.minecraft.server.StatisticList;
 
-
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -62,70 +61,61 @@ public final class CraftMagicNumbers implements UnsafeValues {
     }
 
     public static Material getMaterial(Block block) {
-        return Material.getMaterial(Block.getId(block));
+        return Material.getMaterial(net.minecraft.server.Block.getId(block));
     }
 
-    public static Item getItem(Material material) {
-        // TODO: Don't use ID
-        Item item = Item.getById(material.getId());
-        return item;
-    }
-
-    @Deprecated
-    // A bad method for bad magic.
-    public static Item getItem(int id) {
-        return Item.getById(id);
-    }
-
-    @Deprecated
-    // A bad method for bad magic.
-    public static int getId(Item item) {
-        return Item.getId(item);
-    }
-
-    public static Material getMaterial(Item item) {
-        // TODO: Don't use ID
-        Material material = Material.getMaterial(Item.getId(item));
-
-        if (material == null) {
-            return Material.AIR;
-        }
-
-        return material;
-    }
-
-    public static Block getBlock(Material material) {
-        if (material == null) {
-            return null;
-        }
-        // TODO: Don't use ID
-        Block block = Block.getById(material.getId());
-
-        if (block == null) {
-            return Blocks.AIR;
-        }
-
-        return block;
+    public static Material getMaterial(net.minecraft.server.Item item) {
+        return Material.getMaterial(Item.getId(item));
     }
 
     @Override
     public Material getMaterialFromInternalName(String name) {
-        return getMaterial((Item) Item.REGISTRY.get(new MinecraftKey(name)));
+        MinecraftKey minecraftkey = new MinecraftKey(name);
+
+        if (net.minecraft.server.Item.REGISTRY.d(minecraftkey)) {
+            net.minecraft.server.Item item = (net.minecraft.server.Item) net.minecraft.server.Item.REGISTRY.get(minecraftkey);
+            if (item != null) {
+                return getMaterial(item);
+            }
+        }
+
+        if (net.minecraft.server.Block.REGISTRY.d(minecraftkey)) {
+            Block block = (Block) net.minecraft.server.Block.REGISTRY.get(minecraftkey);
+            if (block != null) {
+                return getMaterial(block);
+            }
+        }
+
+        return null;
     }
 
     @Override
     public List<String> tabCompleteInternalMaterialName(String token, List<String> completions) {
-        ArrayList<String> results = Lists.newArrayList();
-        for (MinecraftKey key : (Set<MinecraftKey>)Item.REGISTRY.keySet()) {
-            results.add(key.toString());
+        if (completions == null) {
+            completions = new ArrayList<String>();
         }
-        return StringUtil.copyPartialMatches(token, results, completions);
+        Iterator iterator = net.minecraft.server.Item.REGISTRY.iterator();
+        while (iterator.hasNext()) {
+            net.minecraft.server.Item item = (net.minecraft.server.Item) iterator.next();
+            String name = net.minecraft.server.Item.REGISTRY.b(item).toString();
+            if (StringUtil.startsWithIgnoreCase(name, token)) {
+                completions.add(name);
+            }
+        }
+        iterator = net.minecraft.server.Block.REGISTRY.iterator();
+        while (iterator.hasNext()) {
+            Block block = (Block) iterator.next();
+            String name = net.minecraft.server.Block.REGISTRY.b(block).toString();
+            if (StringUtil.startsWithIgnoreCase(name, token)) {
+                completions.add(name);
+            }
+        }
+        return completions;
     }
 
     @Override
     public ItemStack modifyItemStack(ItemStack stack, String arguments) {
         net.minecraft.server.ItemStack nmsStack = CraftItemStack.asNMSCopy(stack);
-
         try {
             nmsStack.setTag((NBTTagCompound) MojangsonParser.parse(arguments));
         } catch (MojangsonParseException ex) {
@@ -141,6 +131,8 @@ public final class CraftMagicNumbers implements UnsafeValues {
     public Statistic getStatisticFromInternalName(String name) {
         return CraftStatistic.getBukkitStatisticByName(name);
     }
+
+    
 
     @Override
     public List<String> tabCompleteInternalStatisticOrAchievementName(String token, List<String> completions) {
@@ -210,6 +202,5 @@ public final class CraftMagicNumbers implements UnsafeValues {
         public static final int TAG_LIST = 9;
         public static final int TAG_COMPOUND = 10;
         public static final int TAG_INT_ARRAY = 11;
-        public static final int TAG_ANY_NUMBER = 99;
     }
 }

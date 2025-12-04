@@ -34,7 +34,7 @@ import net.minecraft.server.PacketPlayOutTitle.EnumTitleAction;
 import org.apache.commons.lang.Validate;
 import org.apache.commons.lang.NotImplementedException;
 import org.bukkit.*;
-import org.bukkit.Achievement;
+
 import org.bukkit.BanList;
 import org.bukkit.Statistic;
 import org.bukkit.Material;
@@ -715,20 +715,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
         return getHandle().fauxSleeping;
     }
 
-    @Override
-    public void awardAchievement(Achievement achievement) {
-        throw new UnsupportedOperationException("Not supported in this Minecraft version.");
-    }
-
-    @Override
-    public void removeAchievement(Achievement achievement) {
-        throw new UnsupportedOperationException("Not supported in this Minecraft version.");
-    }
-
-    @Override
-    public boolean hasAchievement(Achievement achievement) {
-        throw new UnsupportedOperationException("Not supported in this Minecraft version.");
-    }
+    
 
     @Override
     public void incrementStatistic(Statistic statistic) {

@@ -24,8 +24,7 @@ public interface UnsafeValues {
 
     Statistic getStatisticFromInternalName(String name);
 
-    Achievement getAchievementFromInternalName(String name);
-
+    @Deprecated
     List<String> tabCompleteInternalStatisticOrAchievementName(String token, List<String> completions);
 
     /**

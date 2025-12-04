@@ -5,7 +5,7 @@ import java.util.Date;
 
 import com.destroystokyo.paper.Title;
 import com.destroystokyo.paper.profile.PlayerProfile;
-import org.bukkit.Achievement;
+
 import org.bukkit.BanEntry;
 import org.bukkit.BanList;
 import org.bukkit.Bukkit;
@@ -708,38 +708,7 @@ public interface Player extends HumanEntity, Conversable, CommandSender, Offline
     //@Deprecated // Spigot - undeprecate
     public void updateInventory();
 
-    /**
-     * Awards the given achievement and any parent achievements that the
-     * player does not have.
-     *
-     * @param achievement Achievement to award
-     * @throws IllegalArgumentException if achievement is null
-     * @deprecated future versions of Minecraft do not have achievements
-     */
-    @Deprecated
-    public void awardAchievement(Achievement achievement);
-
-    /**
-     * Removes the given achievement and any children achievements that the
-     * player has.
-     *
-     * @param achievement Achievement to remove
-     * @throws IllegalArgumentException if achievement is null
-     * @deprecated future versions of Minecraft do not have achievements
-     */
-    @Deprecated
-    public void removeAchievement(Achievement achievement);
-
-    /**
-     * Gets whether this player has the given achievement.
-     *
-     * @param achievement the achievement to check
-     * @return whether the player has the achievement
-     * @throws IllegalArgumentException if achievement is null
-     * @deprecated future versions of Minecraft do not have achievements
-     */
-    @Deprecated
-    public boolean hasAchievement(Achievement achievement);
+    
 
     /**
      * Increments the given statistic for this player.
